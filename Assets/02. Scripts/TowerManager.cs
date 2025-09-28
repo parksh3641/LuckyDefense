@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace LuckyDefense
@@ -347,6 +348,156 @@ namespace LuckyDefense
             slot.stackCount = 0;
             slot.towerGroup = null;
             return true;
+        }
+
+        public virtual bool MovePlayerTower(int fromRow, int fromCol, int toRow, int toCol)
+        {
+            if (!IsValidPosition(fromRow, fromCol) || !IsValidPosition(toRow, toCol))
+            {
+                Debug.LogError("잘못된 위치입니다.");
+                return false;
+            }
+
+            TowerSlot fromSlot = myTowerGrid[fromRow, fromCol];
+            TowerSlot toSlot = myTowerGrid[toRow, toCol];
+
+            if (fromSlot.IsEmpty)
+            {
+                Debug.LogError("이동할 타워가 없습니다.");
+                return false;
+            }
+
+            if (!toSlot.IsEmpty)
+            {
+                Debug.LogError("목적지에 이미 타워가 있습니다.");
+                return false;
+            }
+
+            TowerGroup towerGroup = fromSlot.towerGroup;
+            Vector3 newPosition = spawnPositions[toRow * 6 + toCol].position;
+            
+            StartCoroutine(MoveTowerSmoothly(towerGroup, newPosition));
+
+            toSlot.towerTypeId = fromSlot.towerTypeId;
+            toSlot.stackCount = fromSlot.stackCount;
+            toSlot.towerGroup = towerGroup;
+
+            fromSlot.towerTypeId = 0;
+            fromSlot.stackCount = 0;
+            fromSlot.towerGroup = null;
+
+            Debug.Log($"타워 이동 완료: ({fromRow},{fromCol}) -> ({toRow},{toCol})");
+            return true;
+        }
+
+        private IEnumerator MoveTowerSmoothly(TowerGroup towerGroup, Vector3 targetPosition)
+        {
+            Vector3 startPosition = towerGroup.transform.position;
+            float moveSpeed = 10f;
+    
+            while (Vector3.Distance(towerGroup.transform.position, targetPosition) > 0.01f)
+            {
+                towerGroup.transform.position = Vector3.MoveTowards(towerGroup.transform.position, targetPosition, moveSpeed * Time.deltaTime);
+                yield return null;
+            }
+
+            towerGroup.transform.position = targetPosition;
+        }
+
+        public virtual bool SwapPlayerTowers(int row1, int col1, int row2, int col2)
+        {
+            if (!IsValidPosition(row1, col1) || !IsValidPosition(row2, col2))
+            {
+                Debug.LogError("잘못된 위치입니다.");
+                return false;
+            }
+
+            TowerSlot slot1 = myTowerGrid[row1, col1];
+            TowerSlot slot2 = myTowerGrid[row2, col2];
+
+            if (slot1.IsEmpty || slot2.IsEmpty)
+            {
+                Debug.LogError("교환할 타워 중 하나가 비어있습니다.");
+                return false;
+            }
+
+            TowerGroup tower1 = slot1.towerGroup;
+            TowerGroup tower2 = slot2.towerGroup;
+
+            Vector3 pos1 = spawnPositions[row1 * 6 + col1].position;
+            Vector3 pos2 = spawnPositions[row2 * 6 + col2].position;
+
+            StartCoroutine(SwapTowersSmoothly(tower1, tower2, pos2, pos1));
+
+            int tempTowerTypeId = slot1.towerTypeId;
+            int tempStackCount = slot1.stackCount;
+            TowerGroup tempTowerGroup = slot1.towerGroup;
+
+            slot1.towerTypeId = slot2.towerTypeId;
+            slot1.stackCount = slot2.stackCount;
+            slot1.towerGroup = slot2.towerGroup;
+
+            slot2.towerTypeId = tempTowerTypeId;
+            slot2.stackCount = tempStackCount;
+            slot2.towerGroup = tempTowerGroup;
+
+            Debug.Log($"타워 교환 완료: ({row1},{col1}) <-> ({row2},{col2})");
+            return true;
+        }
+
+        private IEnumerator SwapTowersSmoothly(TowerGroup tower1, TowerGroup tower2, Vector3 target1, Vector3 target2)
+        {
+            float moveSpeed = 10f;
+    
+            while (Vector3.Distance(tower1.transform.position, target1) > 0.01f || Vector3.Distance(tower2.transform.position, target2) > 0.01f)
+            {
+                tower1.transform.position = Vector3.MoveTowards(tower1.transform.position, target1, moveSpeed * Time.deltaTime);
+                tower2.transform.position = Vector3.MoveTowards(tower2.transform.position, target2, moveSpeed * Time.deltaTime);
+                yield return null;
+            }
+
+            tower1.transform.position = target1;
+            tower2.transform.position = target2;
+        }
+
+        public bool IsValidPosition(int row, int col)
+        {
+            return row >= 0 && row < 3 && col >= 0 && col < 6;
+        }
+
+        public bool IsPlayerSlotEmpty(int row, int col)
+        {
+            if (!IsValidPosition(row, col)) return false;
+            return myTowerGrid[row, col].IsEmpty;
+        }
+
+        public TowerGroup GetPlayerTowerGroup(int row, int col)
+        {
+            if (!IsValidPosition(row, col)) return null;
+            return myTowerGrid[row, col].towerGroup;
+        }
+
+        public Vector3 GetPlayerSlotPosition(int row, int col)
+        {
+            if (!IsValidPosition(row, col)) return Vector3.zero;
+            int index = row * 6 + col;
+            return spawnPositions[index].position;
+        }
+
+        public Vector2Int GetSlotFromPosition(Vector3 position)
+        {
+            for (int row = 0; row < 3; row++)
+            {
+                for (int col = 0; col < 6; col++)
+                {
+                    Vector3 slotPosition = GetPlayerSlotPosition(row, col);
+                    if (Vector3.Distance(position, slotPosition) < 0.1f)
+                    {
+                        return new Vector2Int(row, col);
+                    }
+                }
+            }
+            return new Vector2Int(-1, -1);
         }
 
         public int GetNextSummonCost(int number)

@@ -299,8 +299,8 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 705800533}
         m_TargetAssemblyTypeName: LuckyDefense.UIManager, Assembly-CSharp
-        m_MethodName: SetGamblingViewActive
-        m_Mode: 6
+        m_MethodName: ToggleGamblingView
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -2309,8 +2309,8 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 705800533}
         m_TargetAssemblyTypeName: LuckyDefense.UIManager, Assembly-CSharp
-        m_MethodName: SetUpgradeViewActive
-        m_Mode: 6
+        m_MethodName: ToggleUpgradeView
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -2701,6 +2701,9 @@ MonoBehaviour:
   towerAttackRange: {fileID: 1795275035}
   selectionIndicator: {fileID: 0}
   selectionMaterial: {fileID: 0}
+  dragLineRenderer: {fileID: 0}
+  dragMinDistance: 0.3
+  snapDistance: 0.5
 --- !u!1 &342958103
 GameObject:
   m_ObjectHideFlags: 0
@@ -7728,8 +7731,8 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 705800533}
         m_TargetAssemblyTypeName: LuckyDefense.UIManager, Assembly-CSharp
-        m_MethodName: SetGamblingViewActive
-        m_Mode: 6
+        m_MethodName: ToggleGamblingView
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -15381,8 +15384,8 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 705800533}
         m_TargetAssemblyTypeName: LuckyDefense.UIManager, Assembly-CSharp
-        m_MethodName: SetUpgradeViewActive
-        m_Mode: 6
+        m_MethodName: ToggleUpgradeView
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
