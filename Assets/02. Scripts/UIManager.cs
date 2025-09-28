@@ -8,6 +8,8 @@ namespace LuckyDefense
 {
     public class UIManager : MonoBehaviour
     {
+        public static UIManager Instance;
+        
         [Header("View Objects")]
         [SerializeField] private GameObject mainViewObject;
         [SerializeField] private GameObject upgradeViewObject;
@@ -25,18 +27,27 @@ namespace LuckyDefense
         [SerializeField] private TextMeshProUGUI summonCostText;
         [SerializeField] private TextMeshProUGUI waveText;
         [SerializeField] private TextMeshProUGUI waveTimerText;
+        [SerializeField] private WaveUI waveUI;
 
-        [SerializeField] private TextMeshProUGUI monstersText;
-        [SerializeField] private Image monstersFillAmount;
+        [Header("Enemy Count UI")]
+        [SerializeField] private TextMeshProUGUI totalEnemyCountText;
+        [SerializeField] private Image totalEnemyFillamount;
         
         [Header("Managers")]
         [SerializeField] private TowerManager towerManager;
         [SerializeField] private GameManager gameManager;
+        
+        [Header("Enemy Settings")]
+        [SerializeField] private int maxEnemyCount = 100;
 
         private void Awake()
         {
+            Instance = this;
+            
             SetupButtonEvents();
             SetInitialViewState();
+            
+            waveUI.gameObject.SetActive(false);
         }
 
         private void Start()
@@ -93,6 +104,7 @@ namespace LuckyDefense
             UpdateMaxCountUI();
             UpdateSummonCostUI();
             UpdateWaveUI();
+            UpdateEnemyCountUI();
         }
 
         private void UpdateGoldUI()
@@ -148,6 +160,56 @@ namespace LuckyDefense
             {
                 waveTimerText.text = WaveManager.Instance.GetWaveTimeString();
             }
+        }
+
+        private void UpdateEnemyCountUI()
+        {
+            int currentEnemyCount = GetCurrentEnemyCount();
+            
+            if (totalEnemyCountText != null)
+            {
+                totalEnemyCountText.text = $"{currentEnemyCount} / {maxEnemyCount}";
+            }
+            
+            if (totalEnemyFillamount != null)
+            {
+                float fillRatio = (float)currentEnemyCount / maxEnemyCount;
+                totalEnemyFillamount.fillAmount = fillRatio;
+            }
+        }
+
+        private int GetCurrentEnemyCount()
+        {
+            GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+            GameObject[] monsters = GameObject.FindGameObjectsWithTag("Monster");
+            
+            return enemies.Length + monsters.Length;
+        }
+
+        public void SetMaxEnemyCount(int newMaxCount)
+        {
+            maxEnemyCount = newMaxCount;
+        }
+
+        public int GetMaxEnemyCount()
+        {
+            return maxEnemyCount;
+        }
+
+        public float GetEnemyCountRatio()
+        {
+            return (float)GetCurrentEnemyCount() / maxEnemyCount;
+        }
+
+        public bool IsEnemyCountAtMax()
+        {
+            return GetCurrentEnemyCount() >= maxEnemyCount;
+        }
+
+        public void ShowWaveUI(int number)
+        {
+            waveUI.gameObject.SetActive(true);
+            waveUI.SetWaveText(number);
         }
     }
 }

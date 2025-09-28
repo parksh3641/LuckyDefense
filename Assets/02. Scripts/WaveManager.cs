@@ -12,6 +12,9 @@ namespace LuckyDefense
         [SerializeField] private ArenaType currentArenaType = ArenaType.Normal;
         [SerializeField] private bool autoStartNextWave = true;
         
+        [Header("Scaling Settings")]
+        [SerializeField] private float healthIncreasePerWave = 0.2f;
+        
         private CSVLoadManager csvManager;
         private EnemySpawner enemySpawner;
         private int currentWaveIndex = 0;
@@ -55,20 +58,13 @@ namespace LuckyDefense
 
             if (waveTimer <= 0f)
             {
-                if (enemySpawner != null && enemySpawner.GetActiveEnemyCount() == 0)
+                if (autoStartNextWave)
                 {
-                    if (autoStartNextWave)
-                    {
-                        StartNextWave();
-                    }
-                    else
-                    {
-                        isWaveActive = false;
-                    }
+                    StartNextWave();
                 }
                 else
                 {
-                    waveTimer = 5f;
+                    isWaveActive = false;
                 }
             }
         }
@@ -97,7 +93,11 @@ namespace LuckyDefense
             waveTimer = currentWaveData.Wave_Time;
 
             Debug.Log($"웨이브 {currentWaveIndex} 시작 - 시간: {currentWaveData.Wave_Time}초, " +
-                     $"몬스터: {currentWaveData.Monster_ID}, 보스: {(currentWaveData.IsBoss ? "예" : "아니오")}");
+                     $"몬스터: {currentWaveData.Monster_ID}, 보스: {(currentWaveData.IsBoss ? "예" : "아니오")}, " +
+                     $"체력 배율: {GetHealthMultiplier():F2}x");
+
+            if (UIManager.Instance != null)
+                UIManager.Instance.ShowWaveUI(currentWaveIndex);
 
             if (enemySpawner != null)
             {
@@ -107,30 +107,7 @@ namespace LuckyDefense
                 enemySpawner.StartWave();
             }
         }
-
-        public void ForceNextWave()
-        {
-            if (!gameStarted) return;
-
-            if (enemySpawner != null)
-            {
-                enemySpawner.ClearAllEnemies();
-            }
-            
-            StartNextWave();
-        }
-
-        public void StopWave()
-        {
-            isWaveActive = false;
-            waveTimer = 0f;
-            
-            if (enemySpawner != null)
-            {
-                enemySpawner.StopWave();
-            }
-        }
-
+        
         public void EndGame()
         {
             gameStarted = false;
@@ -145,14 +122,9 @@ namespace LuckyDefense
             Debug.Log("게임 종료");
         }
 
-        public void SetArenaType(ArenaType arenaType)
+        public float GetHealthMultiplier()
         {
-            currentArenaType = arenaType;
-        }
-
-        public void SetAutoStart(bool autoStart)
-        {
-            autoStartNextWave = autoStart;
+            return 1.0f + (healthIncreasePerWave * (currentWaveIndex - 1));
         }
 
         public string GetWaveTimeString()
@@ -169,35 +141,6 @@ namespace LuckyDefense
             if (!gameStarted) return "Wave -";
             string bossText = IsCurrentWaveBoss ? " (BOSS)" : "";
             return $"Wave {currentWaveIndex}{bossText}";
-        }
-
-        public int GetMaxWaveCount()
-        {
-            return csvManager.GetMaxWaveIndex(currentArenaType);
-        }
-
-        public bool IsGameComplete()
-        {
-            return currentWaveIndex >= GetMaxWaveCount();
-        }
-
-        public WaveData GetCurrentWaveData()
-        {
-            return currentWaveData;
-        }
-
-        public void RestartGame()
-        {
-            currentWaveIndex = 0;
-            currentWaveData = null;
-            isWaveActive = false;
-            waveTimer = 0f;
-            gameStarted = false;
-            
-            if (enemySpawner != null)
-            {
-                enemySpawner.ClearAllEnemies();
-            }
         }
     }
 }

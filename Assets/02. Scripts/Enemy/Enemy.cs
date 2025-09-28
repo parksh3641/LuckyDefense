@@ -205,20 +205,7 @@ namespace LuckyDefense
     
             if (spawner != null)
             {
-                spawner.DestroyEnemy(this, false);
-            }
-        }
-
-        private void ReachEnd()
-        {
-            if (isDead) return;
-            
-            isDead = true;
-            isMoving = false;
-            
-            if (spawner != null)
-            {
-                spawner.DestroyEnemy(this, true);
+                spawner.DestroyEnemy(this);
             }
         }
 

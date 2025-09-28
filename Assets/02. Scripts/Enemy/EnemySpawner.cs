@@ -345,17 +345,9 @@ namespace LuckyDefense
             }
         }
 
-        public void DestroyEnemy(Enemy enemy, bool reachedEnd = false)
+        public void DestroyEnemy(Enemy enemy)
         {
             if (enemy == null) return;
-
-            if (!reachedEnd)
-            {
-                if (GameManager.Instance != null)
-                {
-                    GameManager.Instance.AddGold(enemy.GoldReward);
-                }
-            }
 
             activeEnemies.Remove(enemy);
             enemy.gameObject.SetActive(false);

@@ -175,17 +175,20 @@ namespace LuckyDefense
         protected virtual Vector2Int FindBestSlotForPlayer(int towerType)
         {
             List<Vector2Int> sameTypeSlots = new List<Vector2Int>();
-            List<Vector2Int> emptySlots = new List<Vector2Int>();
+            Vector2Int firstEmptySlot = new Vector2Int(-1, -1);
 
             for (int row = 0; row < 3; row++)
             {
                 for (int col = 0; col < 6; col++)
                 {
                     TowerSlot slot = myTowerGrid[row, col];
-                    
+            
                     if (slot.IsEmpty)
                     {
-                        emptySlots.Add(new Vector2Int(row, col));
+                        if (firstEmptySlot.x == -1)
+                        {
+                            firstEmptySlot = new Vector2Int(row, col);
+                        }
                     }
                     else if (slot.towerTypeId == towerType && slot.CanAddStack)
                     {
@@ -197,8 +200,8 @@ namespace LuckyDefense
             if (sameTypeSlots.Count > 0)
                 return sameTypeSlots[Random.Range(0, sameTypeSlots.Count)];
 
-            if (emptySlots.Count > 0)
-                return emptySlots[Random.Range(0, emptySlots.Count)];
+            if (firstEmptySlot.x != -1)
+                return firstEmptySlot;
 
             return new Vector2Int(-1, -1);
         }
@@ -206,17 +209,20 @@ namespace LuckyDefense
         protected virtual Vector2Int FindBestSlotForAI(int towerType)
         {
             List<Vector2Int> sameTypeSlots = new List<Vector2Int>();
-            List<Vector2Int> emptySlots = new List<Vector2Int>();
+            Vector2Int firstEmptySlot = new Vector2Int(-1, -1);
 
             for (int row = 0; row < 3; row++)
             {
                 for (int col = 0; col < 6; col++)
                 {
                     TowerSlot slot = aiTowerGrid[row, col];
-                    
+            
                     if (slot.IsEmpty)
                     {
-                        emptySlots.Add(new Vector2Int(row, col));
+                        if (firstEmptySlot.x == -1)
+                        {
+                            firstEmptySlot = new Vector2Int(row, col);
+                        }
                     }
                     else if (slot.towerTypeId == towerType && slot.CanAddStack)
                     {
@@ -228,8 +234,8 @@ namespace LuckyDefense
             if (sameTypeSlots.Count > 0)
                 return sameTypeSlots[Random.Range(0, sameTypeSlots.Count)];
 
-            if (emptySlots.Count > 0)
-                return emptySlots[Random.Range(0, emptySlots.Count)];
+            if (firstEmptySlot.x != -1)
+                return firstEmptySlot;
 
             return new Vector2Int(-1, -1);
         }

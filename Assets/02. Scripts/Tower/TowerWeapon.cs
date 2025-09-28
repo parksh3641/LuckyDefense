@@ -130,7 +130,7 @@ namespace LuckyDefense
             criticalRate = towerData.Cri_Rate;
             criticalDamage = towerData.Cri_Damage;
             
-            //Debug.Log($"타워 무기 스탯 적용: 공격력={attackDamage}, 사거리={attackRange}, 공격속도={attackInterval}");
+            SetSpineAnimationSpeed();
         }
 
         private void SetDefaultStats()
@@ -141,6 +141,21 @@ namespace LuckyDefense
             targetType = 1;
             criticalRate = 5f;
             criticalDamage = 150f;
+            
+            SetSpineAnimationSpeed();
+        }
+
+        private void SetSpineAnimationSpeed()
+        {
+            if (skeletonAnimation == null) return;
+            
+            float baseAnimationDuration = 1.0f;
+            float animationSpeed = attackInterval / baseAnimationDuration;
+            
+            if (skeletonAnimation.skeleton.Data.FindAnimation(attackAnimationName) != null)
+            {
+                skeletonAnimation.timeScale = animationSpeed;
+            }
         }
 
         private void SetupSpineAnimation()
@@ -229,10 +244,8 @@ namespace LuckyDefense
                     selectedTarget = GetFarthestEnemy();
                     break;
                 case TargetType.LowestHP:
-                    //selectedTarget = GetLowestHPEnemy();
                     break;
                 case TargetType.HighestHP:
-                    //selectedTarget = GetHighestHPEnemy();
                     break;
                 case TargetType.Random:
                     selectedTarget = GetRandomEnemy();
@@ -285,46 +298,6 @@ namespace LuckyDefense
             return farthest;
         }
 
-        // private Transform GetLowestHPEnemy()
-        // {
-        //     Transform lowestHP = null;
-        //     float minHP = float.MaxValue;
-        //
-        //     foreach (var enemy in enemiesInRange)
-        //     {
-        //         if (enemy == null) continue;
-        //         
-        //         var enemyHP = enemy.GetComponent<EnemyHP>();
-        //         if (enemyHP != null && enemyHP.CurrentHP < minHP)
-        //         {
-        //             minHP = enemyHP.CurrentHP;
-        //             lowestHP = enemy;
-        //         }
-        //     }
-        //
-        //     return lowestHP ?? GetNearestEnemy();
-        // }
-
-        // private Transform GetHighestHPEnemy()
-        // {
-        //     Transform highestHP = null;
-        //     float maxHP = 0f;
-        //
-        //     foreach (var enemy in enemiesInRange)
-        //     {
-        //         if (enemy == null) continue;
-        //         
-        //         var enemyHP = enemy.GetComponent<EnemyHP>();
-        //         if (enemyHP != null && enemyHP.CurrentHP > maxHP)
-        //         {
-        //             maxHP = enemyHP.CurrentHP;
-        //             highestHP = enemy;
-        //         }
-        //     }
-        //
-        //     return highestHP ?? GetNearestEnemy();
-        // }
-
         private Transform GetRandomEnemy()
         {
             if (enemiesInRange.Count == 0) return null;
@@ -376,9 +349,13 @@ namespace LuckyDefense
                 {
                     PerformAttack();
                     lastAttackTime = Time.time;
+                    
+                    yield return new WaitForSeconds(attackInterval);
                 }
-                
-                yield return new WaitForSeconds(0.1f);
+                else
+                {
+                    yield return new WaitForSeconds(0.1f);
+                }
             }
         }
 
@@ -464,6 +441,7 @@ namespace LuckyDefense
             attackInterval *= 0.9f;
             criticalRate += 2f;
             
+            SetSpineAnimationSpeed();
             PlayUpgradeEffect();
         }
 
