@@ -89,7 +89,13 @@ namespace LuckyDefense
         {
             LoadTowerDataFromCSV();
             currentState = TowerState.Idle;
+            SetDefaultDirection();
             PlayAnimation(idleAnimationName, true);
+        }
+
+        private void SetDefaultDirection()
+        {
+            transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
         }
 
         private void LoadTowerDataFromCSV()
@@ -124,7 +130,7 @@ namespace LuckyDefense
             criticalRate = towerData.Cri_Rate;
             criticalDamage = towerData.Cri_Damage;
             
-            Debug.Log($"타워 무기 스탯 적용: 공격력={attackDamage}, 사거리={attackRange}, 공격속도={attackInterval}");
+            //Debug.Log($"타워 무기 스탯 적용: 공격력={attackDamage}, 사거리={attackRange}, 공격속도={attackInterval}");
         }
 
         private void SetDefaultStats()
@@ -223,10 +229,10 @@ namespace LuckyDefense
                     selectedTarget = GetFarthestEnemy();
                     break;
                 case TargetType.LowestHP:
-                    selectedTarget = GetLowestHPEnemy();
+                    //selectedTarget = GetLowestHPEnemy();
                     break;
                 case TargetType.HighestHP:
-                    selectedTarget = GetHighestHPEnemy();
+                    //selectedTarget = GetHighestHPEnemy();
                     break;
                 case TargetType.Random:
                     selectedTarget = GetRandomEnemy();
@@ -279,45 +285,45 @@ namespace LuckyDefense
             return farthest;
         }
 
-        private Transform GetLowestHPEnemy()
-        {
-            Transform lowestHP = null;
-            float minHP = float.MaxValue;
+        // private Transform GetLowestHPEnemy()
+        // {
+        //     Transform lowestHP = null;
+        //     float minHP = float.MaxValue;
+        //
+        //     foreach (var enemy in enemiesInRange)
+        //     {
+        //         if (enemy == null) continue;
+        //         
+        //         var enemyHP = enemy.GetComponent<EnemyHP>();
+        //         if (enemyHP != null && enemyHP.CurrentHP < minHP)
+        //         {
+        //             minHP = enemyHP.CurrentHP;
+        //             lowestHP = enemy;
+        //         }
+        //     }
+        //
+        //     return lowestHP ?? GetNearestEnemy();
+        // }
 
-            foreach (var enemy in enemiesInRange)
-            {
-                if (enemy == null) continue;
-                
-                var enemyHP = enemy.GetComponent<EnemyHP>();
-                if (enemyHP != null && enemyHP.CurrentHP < minHP)
-                {
-                    minHP = enemyHP.CurrentHP;
-                    lowestHP = enemy;
-                }
-            }
-
-            return lowestHP ?? GetNearestEnemy();
-        }
-
-        private Transform GetHighestHPEnemy()
-        {
-            Transform highestHP = null;
-            float maxHP = 0f;
-
-            foreach (var enemy in enemiesInRange)
-            {
-                if (enemy == null) continue;
-                
-                var enemyHP = enemy.GetComponent<EnemyHP>();
-                if (enemyHP != null && enemyHP.CurrentHP > maxHP)
-                {
-                    maxHP = enemyHP.CurrentHP;
-                    highestHP = enemy;
-                }
-            }
-
-            return highestHP ?? GetNearestEnemy();
-        }
+        // private Transform GetHighestHPEnemy()
+        // {
+        //     Transform highestHP = null;
+        //     float maxHP = 0f;
+        //
+        //     foreach (var enemy in enemiesInRange)
+        //     {
+        //         if (enemy == null) continue;
+        //         
+        //         var enemyHP = enemy.GetComponent<EnemyHP>();
+        //         if (enemyHP != null && enemyHP.CurrentHP > maxHP)
+        //         {
+        //             maxHP = enemyHP.CurrentHP;
+        //             highestHP = enemy;
+        //         }
+        //     }
+        //
+        //     return highestHP ?? GetNearestEnemy();
+        // }
 
         private Transform GetRandomEnemy()
         {
@@ -405,12 +411,19 @@ namespace LuckyDefense
             if (bulletPrefab == null || firePoint == null || currentTarget == null) return;
 
             GameObject bullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
-            
+    
             var bulletComponent = bullet.GetComponent<Bullet>();
             if (bulletComponent != null)
             {
                 float finalDamage = CalculateDamage();
+                bool isCritical = Random.Range(0f, 100f) < criticalRate;
+        
                 bulletComponent.Initialize(currentTarget, finalDamage);
+                
+                if (EnemySpawner.Instance != null)
+                {
+                    EnemySpawner.Instance.ShowDamageText(currentTarget.position, (int)finalDamage, isCritical);
+                }
             }
         }
 

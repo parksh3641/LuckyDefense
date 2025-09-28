@@ -1,5 +1,9 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using Spine;
+using UnityEngine;
 using Spine.Unity;
+using UnityEngine.Serialization;
+using UnityEngine.UI;
 
 namespace LuckyDefense
 {
@@ -10,10 +14,15 @@ namespace LuckyDefense
         [SerializeField] private float moveSpeed = 2f;
         [SerializeField] private int attackDamage = 10;
         [SerializeField] private int goldReward = 10;
+
+        [SerializeField] private GameObject hpViewer;
+        [SerializeField] private Image hpFillAmount;
         
         [Header("Components")]
         [SerializeField] private SkeletonAnimation skeletonAnimation;
-        [SerializeField] private CircleCollider2D circleCollider2D;
+        [SerializeField] private BoxCollider boxCollider;
+
+        [Header("Effect")] [SerializeField] private SkeletonAnimation effect;
         
         private Vector3[] waypoints;
         private int currentWaypointIndex = 0;
@@ -21,9 +30,7 @@ namespace LuckyDefense
         private float currentHP;
         private bool isDead = false;
         private bool isMoving = true;
-        private EnemyHP enemyHP;
         
-        public float CurrentHP => enemyHP != null ? enemyHP.CurrentHP : currentHP;
         public float MaxHP => maxHP;
         public int GoldReward => goldReward;
         public int AttackDamage => attackDamage;
@@ -31,17 +38,11 @@ namespace LuckyDefense
 
         private void Awake()
         {
-            if (circleCollider2D == null)
-                circleCollider2D = GetComponent<CircleCollider2D>();
+            if (boxCollider == null)
+                boxCollider = GetComponent<BoxCollider>();
                 
             if (skeletonAnimation == null)
                 skeletonAnimation = GetComponent<SkeletonAnimation>();
-                
-            enemyHP = GetComponent<EnemyHP>();
-            if (enemyHP == null)
-            {
-                enemyHP = gameObject.AddComponent<EnemyHP>();
-            }
         }
 
         public void Initialize(Vector3[] waypointPath, EnemySpawner enemySpawner)
@@ -52,24 +53,25 @@ namespace LuckyDefense
             currentHP = maxHP;
             isDead = false;
             isMoving = true;
-            
-            if (enemyHP != null)
-            {
-                enemyHP.Initialize(maxHP);
-                enemyHP.OnDeath += OnEnemyDeath;
-            }
-            
-            if (circleCollider2D != null)
-                circleCollider2D.enabled = true;
-                
+
+            if (boxCollider != null)
+                boxCollider.enabled = true;
+
+            if (hpViewer != null)
+                hpViewer.SetActive(false);
+
             PlayAnimation("run");
-            
+
             if (waypoints != null && waypoints.Length > 0)
             {
                 transform.position = waypoints[0];
                 currentWaypointIndex = 1;
             }
+            
+            if (effect != null)
+                effect.gameObject.SetActive(false); 
         }
+
 
         public void SetStats(int hp, float speed, int atk, int gold)
         {
@@ -78,11 +80,6 @@ namespace LuckyDefense
             moveSpeed = speed;
             attackDamage = atk;
             goldReward = gold;
-            
-            if (enemyHP != null)
-            {
-                enemyHP.SetMaxHP(hp);
-            }
         }
 
         private void Update()
@@ -115,34 +112,67 @@ namespace LuckyDefense
 
         private void LookAtDirection(Vector3 direction)
         {
-            if (direction.x > 0)
+            if (currentWaypointIndex == 1 || currentWaypointIndex == 2 || currentWaypointIndex == 4)
             {
-                transform.rotation = Quaternion.Euler(0, 180, 0);
+                transform.rotation = Quaternion.Euler(0, 180, 0); // 오른쪽
             }
-            else if (direction.x < 0)
+            else
             {
-                transform.rotation = Quaternion.Euler(0, 0, 0);
+                transform.rotation = Quaternion.Euler(0, 0, 0);   // 왼쪽
             }
         }
-
+        
         public void TakeDamage(float damage)
         {
             if (isDead) return;
 
-            if (enemyHP != null)
+            if (hpViewer != null && !hpViewer.activeSelf)
+                hpViewer.SetActive(true);
+
+            currentHP -= damage;
+            UpdateHPUI();
+
+            if (effect != null)
             {
-                enemyHP.TakeDamage(damage);
+                effect.gameObject.SetActive(true); 
+                effect.AnimationState.ClearTrack(0);
+                effect.AnimationState.SetAnimation(0, "animation", false);
+                effect.AnimationState.Complete += OnAnimationComplete;
             }
-            else
+
+            if (SoundManager.Instance != null)
             {
-                currentHP -= damage;
-                if (currentHP <= 0)
-                {
-                    Die();
-                }
+                SoundManager.Instance.PlaySfx(SFXType.Hit);
+            }
+
+            if (currentHP <= 0)
+            {
+                Die();
             }
         }
+        
+        
+        void OnAnimationComplete(TrackEntry trackEntry)
+        {
+            effect.gameObject.SetActive(false);
+            effect.AnimationState.Complete -= OnAnimationComplete;
+        }
+        
+        private void UpdateHPUI()
+        {
+            if (hpFillAmount == null || hpViewer == null) return;
 
+            hpFillAmount.fillAmount = currentHP / maxHP;
+
+            Transform rootParent = hpViewer.transform;
+            while (rootParent.parent != null)
+                rootParent = rootParent.parent;
+
+            Vector3 parentEuler = rootParent.eulerAngles;
+            hpViewer.transform.rotation = Quaternion.Euler(0, 0, 0);
+            hpViewer.transform.Rotate(0, parentEuler.y, 0);
+        }
+        
         private void OnEnemyDeath()
         {
             Die();
@@ -151,15 +181,28 @@ namespace LuckyDefense
         private void Die()
         {
             if (isDead) return;
-            
+    
             isDead = true;
             isMoving = false;
+    
+            if (boxCollider != null)
+                boxCollider.enabled = false;
             
-            if (circleCollider2D != null)
-                circleCollider2D.enabled = false;
-                
+            if(hpViewer != null)
+                hpViewer.SetActive(false);
+        
             PlayAnimation("dead");
             
+            if(GameManager.Instance != null)
+                GameManager.Instance.AddGold(1);
+    
+            StartCoroutine(DestroyAfterDelay());
+        }
+
+        private IEnumerator DestroyAfterDelay()
+        {
+            yield return new WaitForSeconds(1.0f);
+    
             if (spawner != null)
             {
                 spawner.DestroyEnemy(this, false);
@@ -200,19 +243,6 @@ namespace LuckyDefense
             {
                 isMoving = true;
                 PlayAnimation("run");
-            }
-        }
-
-        public void SetMoveSpeed(float speed)
-        {
-            moveSpeed = speed;
-        }
-
-        private void OnDestroy()
-        {
-            if (enemyHP != null)
-            {
-                enemyHP.OnDeath -= OnEnemyDeath;
             }
         }
     }

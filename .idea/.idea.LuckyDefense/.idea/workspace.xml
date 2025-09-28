@@ -5,10 +5,39 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7b6b3ff4-6bbc-4028-9d1b-7db6c1c7e193" name="변경" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.LuckyDefense/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.LuckyDefense/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/01. Scenes/MainScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/01. Scenes/MainScene.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/CSVLoadManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/02. Scripts/CSVLoadManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/Default/ButtonClickAnimation.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/02. Scripts/Default/ButtonClickAnimation.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/Enemy/Enemy.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/02. Scripts/Enemy/Enemy.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/Enemy/EnemyDamageText.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/02. Scripts/Enemy/EnemyDamageText.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/Enemy/EnemyHP.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/Enemy/EnemyHP.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/Enemy/EnemyHpViewer.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/Enemy/EnemyHpViewer.cs.meta" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/Enemy/EnemySpawner.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/02. Scripts/Enemy/EnemySpawner.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/GameManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/02. Scripts/GameManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/GameManager_AI.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/GameManager_AI.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/SoundManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/02. Scripts/SoundManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/Tower/Bullet.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/02. Scripts/Tower/Bullet.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/Tower/TowerGroup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/02. Scripts/Tower/TowerGroup.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/Tower/TowerWeapon.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/02. Scripts/Tower/TowerWeapon.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/TowerManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/02. Scripts/TowerManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/TowerManager_AI.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/TowerManager_AI.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/UIManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/02. Scripts/UIManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/WaveManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/02. Scripts/WaveManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet1.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet1.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet10.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet10.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet2.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet2.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet3.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet3.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet4.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet4.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet5.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet5.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet6.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet6.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet7.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet7.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet8.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet8.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet9.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/03. Prefabs/Bullet/Builet9.prefab" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/03. Prefabs/Tower/Enemy.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/03. Prefabs/Tower/Enemy.prefab" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/03. Prefabs/Tower/TowerGroup_Hero1.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/03. Prefabs/Tower/TowerGroup_Hero1.prefab" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/03. Prefabs/Tower/TowerGroup_Hero2.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/03. Prefabs/Tower/TowerGroup_Hero2.prefab" afterDir="false" />
@@ -16,6 +45,11 @@
       <change beforePath="$PROJECT_DIR$/Assets/03. Prefabs/Tower/TowerGroup_Normal2.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/03. Prefabs/Tower/TowerGroup_Normal2.prefab" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/03. Prefabs/Tower/TowerGroup_Rare1.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/03. Prefabs/Tower/TowerGroup_Rare1.prefab" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/03. Prefabs/Tower/TowerGroup_Rare2.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/03. Prefabs/Tower/TowerGroup_Rare2.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/06. Tile/CreatePoint.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/06. Tile/CreatePoint.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/06. Tile/WayPoint.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/06. Tile/WayPoint.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Resources/Tower_Data.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Resources/Tower_Data.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Resources/Wave_Data.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Resources/Wave_Data.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/TextMesh Pro/Resources/Fonts &amp; Materials/LiberationSans SDF.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/TextMesh Pro/Resources/Fonts &amp; Materials/LiberationSans SDF.asset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ProjectSettings/TagManager.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/TagManager.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -106,7 +140,7 @@
       <option name="presentableId" value="Default" />
       <updated>1758970150276</updated>
       <workItem from="1758970153774" duration="3000" />
-      <workItem from="1759034780972" duration="12528000" />
+      <workItem from="1759034780972" duration="24993000" />
     </task>
     <servers />
   </component>

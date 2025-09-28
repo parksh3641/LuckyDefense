@@ -1,14 +1,24 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.UI;
 
 namespace LuckyDefense
 {
+    public enum TowerRank
+    {
+        Normal = 1,
+        Rare = 2,
+        Hero = 3,
+        Legendary = 4
+    }
+
     public class TowerGroup : MonoBehaviour
     {
         [Header("Tower Group Settings")]
         [SerializeField] private int towerTypeId;
         [SerializeField] private int maxStackCount = 3;
+        [SerializeField] private SpriteRenderer rankImage;
         
         [Header("Tower Weapons")]
         [SerializeField] private TowerWeapon[] towerWeapons;
@@ -17,8 +27,15 @@ namespace LuckyDefense
         [SerializeField] private ParticleSystem stackUpEffect;
         [SerializeField] private ParticleSystem upgradeEffect;
         
+        [Header("Rank Colors")]
+        [SerializeField] private Color normalColor = Color.white;
+        [SerializeField] private Color rareColor = Color.blue;
+        [SerializeField] private Color heroColor = new Color(0.5f, 0f, 1f, 1f);
+        [SerializeField] private Color legendaryColor = new Color(1f, 0.5f, 0f, 1f);
+        
         private int currentStackCount = 0;
         private TowerData towerData;
+        private TowerRank currentRank;
         
         public int TowerTypeId => towerTypeId;
         public int CurrentStackCount => currentStackCount;
@@ -26,13 +43,77 @@ namespace LuckyDefense
         public bool CanAddStack => currentStackCount < maxStackCount;
         public bool IsEmpty => currentStackCount == 0;
         public List<TowerWeapon> ActiveWeapons => towerWeapons.Take(currentStackCount).ToList();
+        public TowerRank CurrentRank => currentRank;
 
         public void Initialize()
         {
             this.towerTypeId = towerTypeId;
+            SetTowerRankFromType();
             LoadTowerData();
             ValidateWeapons();
+            UpdateRankImage();
             AddTower();
+        }
+
+        public void Initialize(int typeId)
+        {
+            this.towerTypeId = typeId;
+            SetTowerRankFromType();
+            LoadTowerData();
+            ValidateWeapons();
+            UpdateRankImage();
+            AddTower();
+        }
+
+        private void SetTowerRankFromType()
+        {
+            if (towerTypeId >= 1 && towerTypeId <= 2)
+            {
+                currentRank = TowerRank.Normal;
+            }
+            else if (towerTypeId >= 3 && towerTypeId <= 4)
+            {
+                currentRank = TowerRank.Rare;
+            }
+            else if (towerTypeId >= 5 && towerTypeId <= 6)
+            {
+                currentRank = TowerRank.Hero;
+            }
+            else if (towerTypeId >= 7 && towerTypeId <= 8)
+            {
+                currentRank = TowerRank.Legendary;
+            }
+            else
+            {
+                currentRank = TowerRank.Normal;
+            }
+        }
+
+        private void UpdateRankImage()
+        {
+            if (rankImage == null) return;
+
+            Color targetColor = GetRankColor(currentRank);
+            rankImage.color = targetColor;
+
+            Debug.Log($"타워 랭크 이미지 색상 설정: {currentRank} - {targetColor}");
+        }
+
+        private Color GetRankColor(TowerRank rank)
+        {
+            switch (rank)
+            {
+                case TowerRank.Normal:
+                    return normalColor;
+                case TowerRank.Rare:
+                    return rareColor;
+                case TowerRank.Hero:
+                    return heroColor;
+                case TowerRank.Legendary:
+                    return legendaryColor;
+                default:
+                    return normalColor;
+            }
         }
 
         private void LoadTowerData()
@@ -90,9 +171,9 @@ namespace LuckyDefense
             InitializeTowerWeapon(weapon);
             currentStackCount++;
 
+            UpdateTowerPositions();  // 이 줄 추가
             PlayStackUpEffect();
             
-            Debug.Log($"타워 무기 활성화 완료. 현재 스택: {currentStackCount}/{maxStackCount}");
             return true;
         }
 
@@ -232,6 +313,8 @@ namespace LuckyDefense
             if (towerTypeId == newTowerTypeId) return;
 
             towerTypeId = newTowerTypeId;
+            SetTowerRankFromType();
+            UpdateRankImage();
             LoadTowerData();
 
             for (int i = 0; i < currentStackCount; i++)
@@ -242,7 +325,21 @@ namespace LuckyDefense
                 }
             }
 
-            Debug.Log($"타워 타입이 {newTowerTypeId}로 변경되었습니다.");
+            Debug.Log($"타워 타입이 {newTowerTypeId}로 변경되었습니다. 랭크: {currentRank}");
+        }
+
+        public void SetRankColor(TowerRank rank)
+        {
+            currentRank = rank;
+            UpdateRankImage();
+        }
+
+        public void SetCustomRankColor(Color customColor)
+        {
+            if (rankImage != null)
+            {
+                rankImage.color = customColor;
+            }
         }
 
         private void PlayStackUpEffect()
@@ -270,7 +367,8 @@ namespace LuckyDefense
                 maxStackCount = this.maxStackCount,
                 totalDamage = GetTotalDamage(),
                 attackingCount = GetAttackingTowerCount(),
-                position = transform.position
+                position = transform.position,
+                rank = this.currentRank
             };
         }
 
@@ -318,7 +416,7 @@ namespace LuckyDefense
         {
             if (towerWeapons != null)
             {
-                Gizmos.color = Color.blue;
+                Gizmos.color = GetRankColor(currentRank);
                 for (int i = 0; i < towerWeapons.Length; i++)
                 {
                     if (towerWeapons[i] != null)
@@ -330,7 +428,7 @@ namespace LuckyDefense
                         {
                             Gizmos.color = Color.green;
                             Gizmos.DrawCube(weaponPos, Vector3.one * 0.3f);
-                            Gizmos.color = Color.blue;
+                            Gizmos.color = GetRankColor(currentRank);
                         }
                     }
                 }
@@ -347,6 +445,49 @@ namespace LuckyDefense
         {
             RemoveAllTowers();
         }
+        
+        private void UpdateTowerPositions()
+        {
+            Vector3[] positions = GetStackPositions(currentStackCount);
+    
+            for (int i = 0; i < currentStackCount; i++)
+            {
+                if (towerWeapons[i] != null && i < positions.Length)
+                {
+                    towerWeapons[i].transform.localPosition = positions[i];
+                }
+            }
+        }
+
+        private Vector3[] GetStackPositions(int stackCount)
+        {
+            switch (stackCount)
+            {
+                case 1:
+                    return new Vector3[]
+                    {
+                        new Vector3(0f, 0f, 0f)
+                    };
+        
+                case 2:
+                    return new Vector3[]
+                    {
+                        new Vector3(-0.15f, 0f, 0f),
+                        new Vector3(0.15f, -0.25f, 0f)
+                    };
+        
+                case 3:
+                    return new Vector3[]
+                    {
+                        new Vector3(-0.1f, 0f, 0f),
+                        new Vector3(0.25f, -0.15f, 0f),
+                        new Vector3(-0.1f, -0.35f, 0f)
+                    };
+        
+                default:
+                    return new Vector3[] { Vector3.zero };
+            }
+        }
     }
 
     [System.Serializable]
@@ -358,5 +499,6 @@ namespace LuckyDefense
         public float totalDamage;
         public int attackingCount;
         public Vector3 position;
+        public TowerRank rank;
     }
 }

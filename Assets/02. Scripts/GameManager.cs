@@ -87,5 +87,26 @@ namespace LuckyDefense
             
             Debug.Log($"GameManager 초기화 완료 - 골드: {myGold}, 젬: {myGem}, 최대유닛: {myMaxUnitCount}");
         }
+        
+        public void UpdatePlayerSummonCost(int newCost)
+        {
+            mySummonCost = newCost;
+        }
+
+        public void UpdateAISummonCost(int newCost)
+        {
+            aiSummonCost = newCost;
+        }
+
+        public int GetAISummonCost()
+        {
+            return aiSummonCost;
+        }
+
+        public void AddGold(int amount)
+        {
+            myGold += amount;
+            aiGold += amount;
+        }
     }
 }

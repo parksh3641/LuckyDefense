@@ -44,6 +44,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15cd23172db839540888da4c55268ed1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gizmoColor: {r: 1, g: 0, b: 0, a: 1}
-  sphereRadius: 0.5
-  arrowLength: 2
+  _gizmoColor: {r: 0, g: 1, b: 0, a: 1}
+  _sphereRadius: 0.5
+  _arrowLength: 2

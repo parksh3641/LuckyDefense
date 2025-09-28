@@ -13,16 +13,10 @@ namespace LuckyDefense
         public int Arena;
         public int Wave_Time;
         public int Monster_ID;
-        public int Start_Time;
-        public int Delay_Time;
-        public int End_Time;
-        public float HP_Value;
-        public float Money_Value;
-        public float Boss_Money_Value;
-        public float Boss_HP_Value;
+        public int Boss_ID;
         
         public bool IsValidMonster => Monster_ID > 0;
-        public bool IsBoss => Boss_HP_Value > 0 || Boss_Money_Value > 0;
+        public bool IsBoss => Boss_ID > 0;
     }
 
     [System.Serializable]
@@ -242,6 +236,36 @@ namespace LuckyDefense
             Debug.Log($"총 {allWaveData.Count}개의 웨이브 데이터를 로드했습니다.");
         }
 
+        private WaveData ParseWaveCSVLine(string line)
+        {
+            string[] values = line.Split(',');
+            
+            if (values.Length < 6)
+            {
+                Debug.LogWarning($"웨이브 CSV 라인의 컬럼 수가 부족합니다: {values.Length}");
+                return null;
+            }
+
+            WaveData waveData = new WaveData();
+
+            try
+            {
+                waveData.ID = ParseInt(values[0]);
+                waveData.Wave_Index = ParseInt(values[1]);
+                waveData.Arena = ParseInt(values[2]);
+                waveData.Wave_Time = ParseInt(values[3]);
+                waveData.Monster_ID = ParseInt(values[4]);
+                waveData.Boss_ID = ParseInt(values[5]);
+
+                return waveData;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"WaveData 파싱 오류: {e.Message}");
+                return null;
+            }
+        }
+
         private void LoadMonsterDataFromCSV()
         {
             TextAsset csvFile = Resources.Load<TextAsset>(monsterCSVFileName);
@@ -452,42 +476,6 @@ namespace LuckyDefense
             Debug.Log($"총 {towerDataCache.Count}개의 타워 데이터를 로드했습니다.");
         }
 
-        private WaveData ParseWaveCSVLine(string line)
-        {
-            string[] values = line.Split(',');
-            
-            if (values.Length < 12)
-            {
-                Debug.LogWarning($"웨이브 CSV 라인의 컬럼 수가 부족합니다: {values.Length}");
-                return null;
-            }
-
-            WaveData waveData = new WaveData();
-
-            try
-            {
-                waveData.ID = ParseInt(values[0]);
-                waveData.Wave_Index = ParseInt(values[1]);
-                waveData.Arena = ParseInt(values[2]);
-                waveData.Wave_Time = ParseInt(values[3]);
-                waveData.Monster_ID = ParseInt(values[4], -1);
-                waveData.Start_Time = ParseInt(values[5]);
-                waveData.Delay_Time = ParseInt(values[6]);
-                waveData.End_Time = ParseInt(values[7]);
-                waveData.HP_Value = ParseFloat(values[8]);
-                waveData.Money_Value = ParseFloat(values[9]);
-                waveData.Boss_Money_Value = ParseFloat(values[10]);
-                waveData.Boss_HP_Value = ParseFloat(values[11]);
-
-                return waveData;
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"WaveData 파싱 오류: {e.Message}");
-                return null;
-            }
-        }
-
         private SummonCostData ParseSummonCostCSVLine(string line)
         {
             string[] values = line.Split(',');
@@ -687,10 +675,7 @@ namespace LuckyDefense
             
             foreach (var group in groupedByArena)
             {
-                var sortedData = group.OrderBy(w => w.Wave_Index)
-                                     .ThenBy(w => w.Start_Time)
-                                     .ToList();
-                
+                var sortedData = group.OrderBy(w => w.Wave_Index).ToList();
                 waveDataCache[group.Key] = sortedData;
             }
         }
@@ -708,10 +693,10 @@ namespace LuckyDefense
                    new List<WaveData>();
         }
 
-        public List<WaveData> GetWaveDataByWaveIndex(ArenaType arenaType, int waveIndex)
+        public WaveData GetWaveDataByWaveIndex(ArenaType arenaType, int waveIndex)
         {
             var arenaData = GetWaveDataByArena(arenaType);
-            return arenaData.Where(w => w.Wave_Index == waveIndex).ToList();
+            return arenaData.FirstOrDefault(w => w.Wave_Index == waveIndex);
         }
 
         public WaveData[] GetWaveDataArray(ArenaType arenaType)
@@ -827,18 +812,9 @@ namespace LuckyDefense
             return defaultData?.First_Money ?? 100;
         }
 
-        public List<int> GetAvailableMonsterIds(ArenaType arenaType, int waveIndex)
-        {
-            var waveData = GetWaveDataByWaveIndex(arenaType, waveIndex);
-            return waveData.Where(w => w.IsValidMonster)
-                          .Select(w => w.Monster_ID)
-                          .Distinct()
-                          .ToList();
-        }
-
         public bool HasWaveData(ArenaType arenaType, int waveIndex)
         {
-            return GetWaveDataByWaveIndex(arenaType, waveIndex).Count > 0;
+            return GetWaveDataByWaveIndex(arenaType, waveIndex) != null;
         }
 
         public bool HasMonsterData(int monsterID)
@@ -870,10 +846,9 @@ namespace LuckyDefense
             {
                 Debug.Log($"  아레나 {kvp.Key}: {kvp.Value.Count}개 데이터");
                 
-                var waveGroups = kvp.Value.GroupBy(w => w.Wave_Index);
-                foreach (var waveGroup in waveGroups.Take(3))
+                foreach (var wave in kvp.Value.Take(5))
                 {
-                    Debug.Log($"    웨이브 {waveGroup.Key}: {waveGroup.Count()}개");
+                    Debug.Log($"    웨이브 {wave.Wave_Index}: 시간 {wave.Wave_Time}초, 몬스터 {wave.Monster_ID}, 보스 {wave.Boss_ID}");
                 }
             }
             

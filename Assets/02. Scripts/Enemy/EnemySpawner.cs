@@ -9,28 +9,41 @@ namespace LuckyDefense
     {
         public static EnemySpawner Instance { get; private set; }
 
-        [Header("Enemy Settings")] [SerializeField]
-        private GameObject enemyPrefab;
-
+        [Header("Enemy Settings")] 
+        [SerializeField] private GameObject enemyPrefab;
+        [SerializeField] private GameObject bossPrefab;
         [SerializeField] private Transform[] waypointPath1;
         [SerializeField] private Transform[] waypointPath2;
         [SerializeField] private Transform enemyParent;
         [SerializeField] private int poolSize = 100;
 
-        [Header("Wave Settings")] [SerializeField]
-        private WaveManager waveManager;
+        [Header("Spawn Settings")]
+        [SerializeField] private float spawnInterval = 0.5f;
+        [SerializeField] private float pathDelay = 0.1f;
 
+        [Header("Wave Settings")] 
         [SerializeField] private ArenaType currentArena = ArenaType.Normal;
 
+        [Header("Damage Text")]
+        [SerializeField] private GameObject damageTextPrefab;
+        [SerializeField] private Transform damageTextParent;
+        [SerializeField] private Color normalDamageColor = Color.white;
+        [SerializeField] private Color criticalDamageColor = Color.red;
+        [SerializeField] private float criticalSizeMultiplier = 1.5f;
+
         private List<GameObject> enemyPool = new List<GameObject>();
+        private List<GameObject> bossPool = new List<GameObject>();
         private List<Enemy> activeEnemies = new List<Enemy>();
+        private List<GameObject> damageTextPool = new List<GameObject>();
         private CSVLoadManager csvManager;
         private Coroutine currentWaveCoroutine;
         private Vector3[] path1Positions;
         private Vector3[] path2Positions;
+        private int damageTextPoolIndex = 0;
 
         private int currentWaveIndex = 1;
         private bool isWaveActive = false;
+        private WaveData currentWaveData;
 
         private void Awake()
         {
@@ -50,6 +63,7 @@ namespace LuckyDefense
         {
             csvManager = CSVLoadManager.Instance;
             InitializeEnemyPool();
+            InitializeDamageTextPool();
             CacheWaypointPositions();
         }
 
@@ -63,6 +77,38 @@ namespace LuckyDefense
                 enemy.SetActive(false);
                 enemyPool.Add(enemy);
             }
+
+            if (bossPrefab != null)
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    GameObject boss = Instantiate(bossPrefab);
+                    boss.transform.SetParent(enemyParent);
+                    boss.name = $"Boss_{i}";
+                    boss.SetActive(false);
+                    bossPool.Add(boss);
+                }
+            }
+        }
+
+        private void InitializeDamageTextPool()
+        {
+            if (damageTextPrefab == null || damageTextParent == null) 
+            {
+                Debug.LogWarning("DamageText 프리팹 또는 부모 오브젝트가 설정되지 않았습니다.");
+                return;
+            }
+
+            for (int i = 0; i < poolSize; i++)
+            {
+                GameObject damageText = Instantiate(damageTextPrefab);
+                damageText.transform.SetParent(damageTextParent);
+                damageText.name = $"DamageText_{i}";
+                damageText.SetActive(false);
+                damageTextPool.Add(damageText);
+            }
+
+            Debug.Log($"데미지 텍스트 풀 {poolSize}개 초기화 완료");
         }
 
         private void CacheWaypointPositions()
@@ -92,21 +138,18 @@ namespace LuckyDefense
 
             Debug.Log($"StartWave 호출됨 - Arena: {currentArena}, WaveIndex: {currentWaveIndex}");
     
-            var waveData = csvManager.GetWaveDataByWaveIndex(currentArena, currentWaveIndex);
-            Debug.Log($"가져온 웨이브 데이터 개수: {waveData.Count}");
+            currentWaveData = csvManager.GetWaveDataByWaveIndex(currentArena, currentWaveIndex);
     
-            if (waveData.Count == 0)
+            if (currentWaveData == null)
             {
                 Debug.Log($"웨이브 데이터가 없습니다. Arena: {currentArena}, WaveIndex: {currentWaveIndex}");
                 return;
             }
 
-            // 유효한 몬스터 데이터 확인
-            var validMonsters = waveData.Where(w => w.IsValidMonster).ToList();
-            Debug.Log($"유효한 몬스터 데이터 개수: {validMonsters.Count}");
+            Debug.Log($"웨이브 {currentWaveIndex} 시작 - 몬스터 ID: {currentWaveData.Monster_ID}, 보스: {currentWaveData.IsBoss}");
 
             isWaveActive = true;
-            currentWaveCoroutine = StartCoroutine(ProcessWave(waveData));
+            currentWaveCoroutine = StartCoroutine(ProcessWave());
         }
 
         public void StopWave()
@@ -120,63 +163,44 @@ namespace LuckyDefense
             isWaveActive = false;
         }
 
-        private IEnumerator ProcessWave(List<WaveData> waveDataList)
+        private IEnumerator ProcessWave()
         {
-            foreach (var waveData in waveDataList)
-            {
-                //if (!waveData.IsValidMonster) continue;
-
-                float startDelay = waveData.Start_Time / 1000f;
-                float spawnDuration = (waveData.End_Time - waveData.Start_Time) / 1000f;
-                float spawnDelay = waveData.Delay_Time / 1000f;
-
-                if (startDelay > 0)
-                {
-                    yield return new WaitForSeconds(startDelay);
-                }
-
-                yield return StartCoroutine(SpawnMonsters(
-                    waveData.Monster_ID,
-                    spawnDuration,
-                    spawnDelay,
-                    waveData.HP_Value,
-                    waveData.Money_Value
-                ));
-            }
-
-            isWaveActive = false;
-            currentWaveIndex++;
-        }
-
-        private IEnumerator SpawnMonsters(int monsterId, float duration, float spawnDelay, float hpValue, float moneyValue)
-        {
-            float endTime = Time.time + duration;
+            float waveDuration = currentWaveData.Wave_Time;
+            float endTime = Time.time + waveDuration;
             bool spawnPath1 = true;
             float lastSpawnTime = Time.time;
 
             while (Time.time < endTime)
             {
-                if (Time.time >= lastSpawnTime + 0.5f)
+                if (Time.time >= lastSpawnTime + spawnInterval)
                 {
                     Vector3[] targetPath = spawnPath1 ? path1Positions : path2Positions;
                     Vector3 spawnPosition = spawnPath1 ? waypointPath1[0].position : waypointPath2[0].position;
 
-                    SpawnEnemy(monsterId, spawnPosition, targetPath, hpValue, moneyValue);
+                    if (currentWaveData.IsBoss)
+                    {
+                        SpawnBoss(spawnPosition, targetPath);
+                    }
+                    else
+                    {
+                        SpawnEnemy(currentWaveData.Monster_ID, spawnPosition, targetPath);
+                    }
 
                     lastSpawnTime = Time.time;
                     spawnPath1 = !spawnPath1;
 
-                    yield return new WaitForSeconds(0.1f);
+                    yield return new WaitForSeconds(pathDelay);
                 }
                 else
                 {
                     yield return null;
                 }
             }
+
+            isWaveActive = false;
         }
 
-        private void SpawnEnemy(int monsterId, Vector3 spawnPosition, Vector3[] waypoints, float hpValue,
-            float moneyValue)
+        private void SpawnEnemy(int monsterId, Vector3 spawnPosition, Vector3[] waypoints)
         {
             GameObject enemyObj = GetPooledEnemy();
             if (enemyObj == null) return;
@@ -188,8 +212,29 @@ namespace LuckyDefense
             if (enemy != null)
             {
                 enemy.Initialize(waypoints, this);
-                SetupEnemyStats(enemy, monsterId, hpValue, moneyValue);
+                SetupEnemyStats(enemy, monsterId, false);
                 activeEnemies.Add(enemy);
+            }
+        }
+
+        private void SpawnBoss(Vector3 spawnPosition, Vector3[] waypoints)
+        {
+            GameObject bossObj = GetPooledBoss();
+            if (bossObj == null)
+            {
+                bossObj = GetPooledEnemy();
+            }
+            if (bossObj == null) return;
+
+            bossObj.transform.position = spawnPosition;
+            bossObj.SetActive(true);
+
+            Enemy boss = bossObj.GetComponent<Enemy>();
+            if (boss != null)
+            {
+                boss.Initialize(waypoints, this);
+                SetupEnemyStats(boss, currentWaveData.Monster_ID, true);
+                activeEnemies.Add(boss);
             }
         }
 
@@ -202,43 +247,101 @@ namespace LuckyDefense
                     return enemy;
                 }
             }
-
             return null;
         }
 
-        private void SetupEnemyStats(Enemy enemy, int monsterId, float hpValue, float moneyValue)
+        private GameObject GetPooledBoss()
         {
-            MonsterData monsterData = null;
-    
-            if (monsterId > 0)
+            foreach (GameObject boss in bossPool)
             {
-                monsterData = csvManager.GetMonsterData(monsterId);
+                if (!boss.activeInHierarchy)
+                {
+                    return boss;
+                }
             }
-    
-            if (monsterData != null)
+            return null;
+        }
+
+        private GameObject GetPooledDamageText()
+        {
+            if (damageTextPool.Count == 0) return null;
+
+            if (damageTextPoolIndex >= damageTextPool.Count)
+                damageTextPoolIndex = 0;
+
+            GameObject damageText = damageTextPool[damageTextPoolIndex];
+            damageTextPoolIndex++;
+            
+            return damageText;
+        }
+
+        private void SetupEnemyStats(Enemy enemy, int monsterId, bool isBoss)
+        {
+            if (isBoss)
             {
-                float hpMultiplier = 1 + (hpValue / 100f);
-                float goldMultiplier = 1 + (moneyValue / 100f);
-
-                int hp = Mathf.RoundToInt(monsterData.HP * hpMultiplier);
-                int gold = Mathf.RoundToInt(monsterData.Gold * goldMultiplier);
-
-                enemy.SetStats(
-                    hp,
-                    monsterData.Move_Speed,
-                    monsterData.ATK,
-                    gold
-                );
+                BossData bossData = csvManager.GetBossData(currentWaveData.Boss_ID);
+                if (bossData != null)
+                {
+                    enemy.SetStats(
+                        bossData.HP,
+                        bossData.Move_Speed,
+                        bossData.ATK,
+                        bossData.Gold
+                    );
+                }
+                else
+                {
+                    int waveMultiplier = currentWaveIndex;
+                    enemy.SetStats(
+                        500 * waveMultiplier,
+                        1.5f,
+                        50 * waveMultiplier,
+                        100 * waveMultiplier
+                    );
+                }
             }
             else
             {
-                float hpMultiplier = 1 + (hpValue / 100f);
-                float goldMultiplier = 1 + (moneyValue / 100f);
+                MonsterData monsterData = csvManager.GetMonsterData(monsterId);
+                if (monsterData != null)
+                {
+                    int waveMultiplier = currentWaveIndex;
+                    enemy.SetStats(
+                        monsterData.HP * waveMultiplier,
+                        monsterData.Move_Speed,
+                        monsterData.ATK * waveMultiplier,
+                        monsterData.Gold * waveMultiplier
+                    );
+                }
+                else
+                {
+                    int waveMultiplier = currentWaveIndex;
+                    enemy.SetStats(
+                        100 * waveMultiplier,
+                        2f,
+                        10 * waveMultiplier,
+                        10 * waveMultiplier
+                    );
+                }
+            }
+        }
 
-                int hp = Mathf.RoundToInt(100 * hpMultiplier);
-                int gold = Mathf.RoundToInt(10 * goldMultiplier);
+        public void ShowDamageText(Vector3 enemyPosition, int damage, bool isCriticalHit = false)
+        {
+            GameObject damageTextObj = GetPooledDamageText();
+            if (damageTextObj == null) return;
 
-                enemy.SetStats(hp, 2f, 10, gold);
+            Vector3 worldPosition = enemyPosition + Vector3.up * 1f;
+            Vector3 screenPosition = Camera.main.WorldToScreenPoint(worldPosition);
+            
+            damageTextObj.SetActive(true);
+
+            EnemyDamageText damageText = damageTextObj.GetComponent<EnemyDamageText>();
+            if (damageText != null)
+            {
+                damageText.SetDamageColor(isCriticalHit ? criticalDamageColor : normalDamageColor);
+                damageText.SetFontSize(isCriticalHit ? 35 * criticalSizeMultiplier : 35);
+                damageText.Setup(damage, screenPosition);
             }
         }
 
@@ -246,32 +349,21 @@ namespace LuckyDefense
         {
             if (enemy == null) return;
 
+            if (!reachedEnd)
+            {
+                if (GameManager.Instance != null)
+                {
+                    GameManager.Instance.AddGold(enemy.GoldReward);
+                }
+            }
+
             activeEnemies.Remove(enemy);
-
-            if (reachedEnd)
-            {
-                GameManager.Instance.MyGold -= 5;
-            }
-            else
-            {
-                GameManager.Instance.MyGold += enemy.GoldReward;
-            }
-
             enemy.gameObject.SetActive(false);
-        }
-
-        public void NextWave()
-        {
-            if (!isWaveActive)
-            {
-                StartWave();
-            }
         }
 
         public void SetArenaType(ArenaType arenaType)
         {
             currentArena = arenaType;
-            currentWaveIndex = 1;
         }
 
         public void SetWaveIndex(int waveIndex)
@@ -279,54 +371,14 @@ namespace LuckyDefense
             currentWaveIndex = waveIndex;
         }
 
-        public List<Enemy> GetActiveEnemies()
+        public void SetWaveData(WaveData waveData)
         {
-            return new List<Enemy>(activeEnemies);
+            currentWaveData = waveData;
         }
 
         public int GetActiveEnemyCount()
         {
             return activeEnemies.Count;
-        }
-
-        public Enemy GetNearestEnemy(Vector3 position)
-        {
-            Enemy nearest = null;
-            float minDistance = float.MaxValue;
-
-            foreach (Enemy enemy in activeEnemies)
-            {
-                if (enemy != null && enemy.gameObject.activeInHierarchy)
-                {
-                    float distance = Vector3.Distance(position, enemy.transform.position);
-                    if (distance < minDistance)
-                    {
-                        minDistance = distance;
-                        nearest = enemy;
-                    }
-                }
-            }
-
-            return nearest;
-        }
-
-        public List<Enemy> GetEnemiesInRange(Vector3 position, float range)
-        {
-            List<Enemy> enemiesInRange = new List<Enemy>();
-
-            foreach (Enemy enemy in activeEnemies)
-            {
-                if (enemy != null && enemy.gameObject.activeInHierarchy)
-                {
-                    float distance = Vector3.Distance(position, enemy.transform.position);
-                    if (distance <= range)
-                    {
-                        enemiesInRange.Add(enemy);
-                    }
-                }
-            }
-
-            return enemiesInRange;
         }
 
         public void ClearAllEnemies()
@@ -341,17 +393,7 @@ namespace LuckyDefense
 
             activeEnemies.Clear();
         }
-
-        public bool IsWaveActive()
-        {
-            return isWaveActive;
-        }
-
-        public int GetCurrentWaveIndex()
-        {
-            return currentWaveIndex;
-        }
-
+        
         private void OnDestroy()
         {
             StopWave();

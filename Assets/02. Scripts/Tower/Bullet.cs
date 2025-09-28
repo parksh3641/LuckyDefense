@@ -88,14 +88,6 @@ namespace LuckyDefense
             {
                 enemy.TakeDamage(damage);
             }
-            else
-            {
-                EnemyHP enemyHP = target.GetComponent<EnemyHP>();
-                if (enemyHP != null)
-                {
-                    enemyHP.TakeDamage(damage);
-                }
-            }
 
             PlayHitEffect();
             DestroyBullet();

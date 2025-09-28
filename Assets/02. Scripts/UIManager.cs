@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.Serialization;
 
 namespace LuckyDefense
 {
@@ -22,6 +23,11 @@ namespace LuckyDefense
         [SerializeField] private TextMeshProUGUI[] gemText;
         [SerializeField] private TextMeshProUGUI[] maxCountText;
         [SerializeField] private TextMeshProUGUI summonCostText;
+        [SerializeField] private TextMeshProUGUI waveText;
+        [SerializeField] private TextMeshProUGUI waveTimerText;
+
+        [SerializeField] private TextMeshProUGUI monstersText;
+        [SerializeField] private Image monstersFillAmount;
         
         [Header("Managers")]
         [SerializeField] private TowerManager towerManager;
@@ -58,7 +64,7 @@ namespace LuckyDefense
 
         private void SetupButtonEvents()
         {
-            spawnBtn.onClick.AddListener(() => towerManager.SpawnRandomTower());
+            spawnBtn.onClick.AddListener(() => towerManager.SpawnRandomTowerForPlayer());
             upgradeViewBtn.onClick.AddListener(ToggleUpgradeView);
             gamblingViewBtn.onClick.AddListener(ToggleGamblingView);
         }
@@ -69,18 +75,13 @@ namespace LuckyDefense
             upgradeViewObject.SetActive(false);
             gamblingViewObject.SetActive(false);
         }
-
-        private void ToggleMainView()
-        {
-            mainViewObject.SetActive(!mainViewObject.activeInHierarchy);
-        }
-
-        private void ToggleUpgradeView()
+        
+        public void ToggleUpgradeView()
         {
             upgradeViewObject.SetActive(!upgradeViewObject.activeInHierarchy);
         }
 
-        private void ToggleGamblingView()
+        public void ToggleGamblingView()
         {
             gamblingViewObject.SetActive(!gamblingViewObject.activeInHierarchy);
         }
@@ -91,19 +92,16 @@ namespace LuckyDefense
             UpdateGemUI();
             UpdateMaxCountUI();
             UpdateSummonCostUI();
+            UpdateWaveUI();
         }
 
         private void UpdateGoldUI()
         {
             int currentGold = gameManager.MyGold;
-            int summonCost = towerManager.GetNextSummonCost();
-            bool canAfford = currentGold >= summonCost;
-            Color color = canAfford ? Color.white : Color.red;
 
             for (int i = 0; i < goldText.Length; i++)
             {
                 goldText[i].text = currentGold.ToString();
-                goldText[i].color = color;
             }
         }
 
@@ -135,6 +133,21 @@ namespace LuckyDefense
             
             summonCostText.text = cost.ToString();
             summonCostText.color = canAfford ? Color.white : Color.red;
+        }
+
+        private void UpdateWaveUI()
+        {
+            if (WaveManager.Instance == null) return;
+
+            if (waveText != null)
+            {
+                waveText.text = WaveManager.Instance.GetWaveString();
+            }
+
+            if (waveTimerText != null)
+            {
+                waveTimerText.text = WaveManager.Instance.GetWaveTimeString();
+            }
         }
     }
 }

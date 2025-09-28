@@ -34,6 +34,11 @@ namespace LuckyDefense
         {
             _isPressed = false;
             _transform.DOScale(_originalScale, _animationDuration).SetEase(_animationEase);
+
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySfx(SFXType.Click);
+            }
         }
 
         public void OnPointerEnter(PointerEventData eventData)

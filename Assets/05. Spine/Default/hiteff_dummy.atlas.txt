@@ -1,0 +1,10 @@
+hiteff_dummy.png
+size:88,128
+filter:Linear,Linear
+hit_1
+bounds:2,2,47,46
+offsets:29,29,102,102
+rotate:180
+hit_2
+bounds:2,45,81,80
+offsets:11,14,102,102

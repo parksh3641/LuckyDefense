@@ -10,7 +10,6 @@ namespace LuckyDefense
 
         [Header("Wave Settings")]
         [SerializeField] private ArenaType currentArenaType = ArenaType.Normal;
-        [SerializeField] private float waveInterval = 30f;
         [SerializeField] private bool autoStartNextWave = true;
         
         private CSVLoadManager csvManager;
@@ -19,11 +18,15 @@ namespace LuckyDefense
         private bool isWaveActive = false;
         private float waveTimer = 0f;
         private bool gameStarted = false;
+        private WaveData currentWaveData;
 
         public int CurrentWaveIndex => currentWaveIndex;
         public bool IsWaveActive => isWaveActive;
         public float WaveTimer => waveTimer;
         public bool GameStarted => gameStarted;
+        public bool IsCurrentWaveBoss => currentWaveData != null && currentWaveData.IsBoss;
+        public int CurrentWaveTime => currentWaveData != null ? currentWaveData.Wave_Time : 30;
+        public int CurrentMonsterID => currentWaveData != null ? currentWaveData.Monster_ID : 1;
 
         private void Awake()
         {
@@ -52,7 +55,7 @@ namespace LuckyDefense
 
             if (waveTimer <= 0f)
             {
-                if (enemySpawner.GetActiveEnemyCount() == 0)
+                if (enemySpawner != null && enemySpawner.GetActiveEnemyCount() == 0)
                 {
                     if (autoStartNextWave)
                     {
@@ -81,20 +84,26 @@ namespace LuckyDefense
         {
             currentWaveIndex++;
             
-            var waveDataList = csvManager.GetWaveDataByWaveIndex(currentArenaType, currentWaveIndex);
+            currentWaveData = csvManager.GetWaveDataByWaveIndex(currentArenaType, currentWaveIndex);
             
-            if (waveDataList.Count == 0)
+            if (currentWaveData == null)
             {
-                Debug.Log($"CSV에 웨이브 {currentWaveIndex} 데이터가 없어 기본 데이터로 생성합니다.");
+                Debug.Log($"웨이브 {currentWaveIndex} 데이터가 없습니다. 게임 종료.");
+                EndGame();
+                return;
             }
 
             isWaveActive = true;
-            waveTimer = waveInterval;
+            waveTimer = currentWaveData.Wave_Time;
+
+            Debug.Log($"웨이브 {currentWaveIndex} 시작 - 시간: {currentWaveData.Wave_Time}초, " +
+                     $"몬스터: {currentWaveData.Monster_ID}, 보스: {(currentWaveData.IsBoss ? "예" : "아니오")}");
 
             if (enemySpawner != null)
             {
                 enemySpawner.SetArenaType(currentArenaType);
                 enemySpawner.SetWaveIndex(currentWaveIndex);
+                enemySpawner.SetWaveData(currentWaveData);
                 enemySpawner.StartWave();
             }
         }
@@ -122,14 +131,23 @@ namespace LuckyDefense
             }
         }
 
+        public void EndGame()
+        {
+            gameStarted = false;
+            isWaveActive = false;
+            waveTimer = 0f;
+            
+            if (enemySpawner != null)
+            {
+                enemySpawner.StopWave();
+            }
+            
+            Debug.Log("게임 종료");
+        }
+
         public void SetArenaType(ArenaType arenaType)
         {
             currentArenaType = arenaType;
-        }
-
-        public void SetWaveInterval(float interval)
-        {
-            waveInterval = Mathf.Max(5f, interval);
         }
 
         public void SetAutoStart(bool autoStart)
@@ -149,7 +167,37 @@ namespace LuckyDefense
         public string GetWaveString()
         {
             if (!gameStarted) return "Wave -";
-            return $"Wave {currentWaveIndex}";
+            string bossText = IsCurrentWaveBoss ? " (BOSS)" : "";
+            return $"Wave {currentWaveIndex}{bossText}";
+        }
+
+        public int GetMaxWaveCount()
+        {
+            return csvManager.GetMaxWaveIndex(currentArenaType);
+        }
+
+        public bool IsGameComplete()
+        {
+            return currentWaveIndex >= GetMaxWaveCount();
+        }
+
+        public WaveData GetCurrentWaveData()
+        {
+            return currentWaveData;
+        }
+
+        public void RestartGame()
+        {
+            currentWaveIndex = 0;
+            currentWaveData = null;
+            isWaveActive = false;
+            waveTimer = 0f;
+            gameStarted = false;
+            
+            if (enemySpawner != null)
+            {
+                enemySpawner.ClearAllEnemies();
+            }
         }
     }
 }
