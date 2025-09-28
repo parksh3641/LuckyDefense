@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace LuckyDefense
@@ -89,12 +90,20 @@ namespace LuckyDefense
         {
             if (isWaveActive) return;
 
+            Debug.Log($"StartWave 호출됨 - Arena: {currentArena}, WaveIndex: {currentWaveIndex}");
+    
             var waveData = csvManager.GetWaveDataByWaveIndex(currentArena, currentWaveIndex);
+            Debug.Log($"가져온 웨이브 데이터 개수: {waveData.Count}");
+    
             if (waveData.Count == 0)
             {
-                Debug.Log("웨이브 데이터가 없습니다.");
+                Debug.Log($"웨이브 데이터가 없습니다. Arena: {currentArena}, WaveIndex: {currentWaveIndex}");
                 return;
             }
+
+            // 유효한 몬스터 데이터 확인
+            var validMonsters = waveData.Where(w => w.IsValidMonster).ToList();
+            Debug.Log($"유효한 몬스터 데이터 개수: {validMonsters.Count}");
 
             isWaveActive = true;
             currentWaveCoroutine = StartCoroutine(ProcessWave(waveData));
@@ -115,7 +124,7 @@ namespace LuckyDefense
         {
             foreach (var waveData in waveDataList)
             {
-                if (!waveData.IsValidMonster) continue;
+                //if (!waveData.IsValidMonster) continue;
 
                 float startDelay = waveData.Start_Time / 1000f;
                 float spawnDuration = (waveData.End_Time - waveData.Start_Time) / 1000f;
@@ -139,21 +148,30 @@ namespace LuckyDefense
             currentWaveIndex++;
         }
 
-        private IEnumerator SpawnMonsters(int monsterId, float duration, float spawnDelay, float hpValue,
-            float moneyValue)
+        private IEnumerator SpawnMonsters(int monsterId, float duration, float spawnDelay, float hpValue, float moneyValue)
         {
             float endTime = Time.time + duration;
             bool spawnPath1 = true;
+            float lastSpawnTime = Time.time;
 
             while (Time.time < endTime)
             {
-                Vector3[] targetPath = spawnPath1 ? path1Positions : path2Positions;
-                Vector3 spawnPosition = spawnPath1 ? waypointPath1[0].position : waypointPath2[0].position;
+                if (Time.time >= lastSpawnTime + 0.5f)
+                {
+                    Vector3[] targetPath = spawnPath1 ? path1Positions : path2Positions;
+                    Vector3 spawnPosition = spawnPath1 ? waypointPath1[0].position : waypointPath2[0].position;
 
-                SpawnEnemy(monsterId, spawnPosition, targetPath, hpValue, moneyValue);
+                    SpawnEnemy(monsterId, spawnPosition, targetPath, hpValue, moneyValue);
 
-                spawnPath1 = !spawnPath1;
-                yield return new WaitForSeconds(0.1f);
+                    lastSpawnTime = Time.time;
+                    spawnPath1 = !spawnPath1;
+
+                    yield return new WaitForSeconds(0.1f);
+                }
+                else
+                {
+                    yield return null;
+                }
             }
         }
 
@@ -190,7 +208,13 @@ namespace LuckyDefense
 
         private void SetupEnemyStats(Enemy enemy, int monsterId, float hpValue, float moneyValue)
         {
-            var monsterData = csvManager.GetMonsterData(monsterId);
+            MonsterData monsterData = null;
+    
+            if (monsterId > 0)
+            {
+                monsterData = csvManager.GetMonsterData(monsterId);
+            }
+    
             if (monsterData != null)
             {
                 float hpMultiplier = 1 + (hpValue / 100f);
@@ -208,7 +232,13 @@ namespace LuckyDefense
             }
             else
             {
-                enemy.SetStats(100, 2f, 10, 10);
+                float hpMultiplier = 1 + (hpValue / 100f);
+                float goldMultiplier = 1 + (moneyValue / 100f);
+
+                int hp = Mathf.RoundToInt(100 * hpMultiplier);
+                int gold = Mathf.RoundToInt(10 * goldMultiplier);
+
+                enemy.SetStats(hp, 2f, 10, gold);
             }
         }
 

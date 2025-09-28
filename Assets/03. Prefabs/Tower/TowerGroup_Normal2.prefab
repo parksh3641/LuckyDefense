@@ -305,7 +305,8 @@ MonoBehaviour:
   attackAnimationName: attack
   moveAnimationName: move
   firePoint: {fileID: 4372539707508732456}
-  bulletPrefab: {fileID: 0}
+  bulletPrefab: {fileID: 8196739643507731090, guid: 377da34a6faecf346b2d1a71b9f5debe,
+    type: 3}
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -489,7 +490,8 @@ MonoBehaviour:
   attackAnimationName: attack
   moveAnimationName: move
   firePoint: {fileID: 3044781659165679028}
-  bulletPrefab: {fileID: 0}
+  bulletPrefab: {fileID: 8196739643507731090, guid: 377da34a6faecf346b2d1a71b9f5debe,
+    type: 3}
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -601,7 +603,8 @@ MonoBehaviour:
   attackAnimationName: attack
   moveAnimationName: move
   firePoint: {fileID: 5730110405263146125}
-  bulletPrefab: {fileID: 0}
+  bulletPrefab: {fileID: 8196739643507731090, guid: 377da34a6faecf346b2d1a71b9f5debe,
+    type: 3}
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295

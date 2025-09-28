@@ -94,21 +94,21 @@ namespace LuckyDefense
 
         private void MoveToNextWaypoint()
         {
-            if (waypoints == null || currentWaypointIndex >= waypoints.Length) return;
+            if (waypoints == null || waypoints.Length == 0) return;
 
             Vector3 targetPosition = waypoints[currentWaypointIndex];
             Vector3 direction = (targetPosition - transform.position).normalized;
-            
+    
             transform.position += direction * moveSpeed * Time.deltaTime;
             LookAtDirection(direction);
 
             if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
             {
                 currentWaypointIndex++;
-                
+        
                 if (currentWaypointIndex >= waypoints.Length)
                 {
-                    ReachEnd();
+                    currentWaypointIndex = 0;
                 }
             }
         }
@@ -117,11 +117,11 @@ namespace LuckyDefense
         {
             if (direction.x > 0)
             {
-                transform.rotation = Quaternion.Euler(0, 0, 0);
+                transform.rotation = Quaternion.Euler(0, 180, 0);
             }
             else if (direction.x < 0)
             {
-                transform.rotation = Quaternion.Euler(0, 180, 0);
+                transform.rotation = Quaternion.Euler(0, 0, 0);
             }
         }
 

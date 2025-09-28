@@ -4885,9 +4885,8 @@ MonoBehaviour:
   - {fileID: 681580497}
   - {fileID: 1051799840}
   summonCostText: {fileID: 877668915}
-  waveText: {fileID: 1351394353}
-  waveTimerText: {fileID: 134226106}
   towerManager: {fileID: 88263763}
+  gameManager: {fileID: 618888923}
 --- !u!1001 &735110161
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11925,7 +11924,7 @@ MonoBehaviour:
   waypointPath2:
   - {fileID: 573014827}
   - {fileID: 2029323207}
-  - {fileID: 2029323207}
+  - {fileID: 1106577863}
   - {fileID: 1422493304}
   enemyParent: {fileID: 2069607834}
   poolSize: 100

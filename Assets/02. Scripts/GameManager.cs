@@ -57,6 +57,14 @@ namespace LuckyDefense
             }
         }
 
+        private void Start()
+        {
+            if (WaveManager.Instance != null)
+            {
+                WaveManager.Instance.StartGame();
+            }
+        }
+
         private void InitializeGameData()
         {
             var csvManager = CSVLoadManager.Instance;
