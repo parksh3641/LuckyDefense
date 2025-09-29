@@ -28,7 +28,11 @@ namespace LuckyDefense
             gameObject.SetActive(true);
 
             StopAllCoroutines();
-            StartCoroutine(PlayAnimation());
+
+            if (gameObject.activeInHierarchy)
+            {
+                StartCoroutine(PlayAnimation());
+            }
         }
 
         private IEnumerator PlayAnimation()

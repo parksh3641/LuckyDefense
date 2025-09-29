@@ -206,6 +206,8 @@ namespace LuckyDefense
             }
 
             currentStackCount--;
+            
+            UpdateTowerPositions();
 
             Debug.Log($"타워 무기 비활성화 완료. 현재 스택: {currentStackCount}/{maxStackCount}");
             return true;

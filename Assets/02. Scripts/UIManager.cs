@@ -24,6 +24,11 @@ namespace LuckyDefense
         [SerializeField] private Button gamblingViewBtn;
         [SerializeField] private Button miniBossSpawnBtn;
         
+        [Header("Gambling Buttons")]
+        [SerializeField] private Button gamblingNormalBtn;
+        [SerializeField] private Button gamblingRareBtn;
+        [SerializeField] private Button gamblingHeroBtn;
+        
         [Header("UI Animations")]
         [SerializeField] private CoinAnimation[] coinAnimation;
         [SerializeField] private CoinAnimation[] gemAnimation;
@@ -104,6 +109,15 @@ namespace LuckyDefense
             gamblingViewBtn.onClick.AddListener(ToggleGamblingView);
             miniBossSpawnBtn.onClick.AddListener(OnMiniBossButtonClicked);
     
+            if (gamblingNormalBtn != null)
+                gamblingNormalBtn.onClick.AddListener(OnGamblingNormalClicked);
+    
+            if (gamblingRareBtn != null)
+                gamblingRareBtn.onClick.AddListener(OnGamblingRareClicked);
+    
+            if (gamblingHeroBtn != null)
+                gamblingHeroBtn.onClick.AddListener(OnGamblingHeroClicked);
+
             miniBossSpawnBtn.gameObject.SetActive(false);
         }
 
@@ -335,6 +349,54 @@ namespace LuckyDefense
                     gemAnimation[i].gameObject.SetActive(false);
                     gemAnimation[i].gameObject.SetActive(true);
                     gemAnimation[i].Initialize(amount);
+                }
+            }
+        }
+        
+        private void OnGamblingNormalClicked()
+        {
+            if (gameManager != null)
+            {
+                bool success = gameManager.GambleNormalTower();
+                if (success)
+                {
+                    Debug.Log("Normal 도박 성공!");
+                }
+                else
+                {
+                    Debug.Log("Normal 도박 실패 또는 젬 부족");
+                }
+            }
+        }
+
+        private void OnGamblingRareClicked()
+        {
+            if (gameManager != null)
+            {
+                bool success = gameManager.GambleRareTower();
+                if (success)
+                {
+                    Debug.Log("Rare 도박 성공!");
+                }
+                else
+                {
+                    Debug.Log("Rare 도박 실패");
+                }
+            }
+        }
+
+        private void OnGamblingHeroClicked()
+        {
+            if (gameManager != null)
+            {
+                bool success = gameManager.GambleHeroTower();
+                if (success)
+                {
+                    Debug.Log("Hero 도박 성공!");
+                }
+                else
+                {
+                    Debug.Log("Hero 도박 실패");
                 }
             }
         }

@@ -7,9 +7,9 @@ namespace LuckyDefense
 {
     public class ButtonClickAnimation : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
     {
-        [SerializeField] private float _clickScale = 0.95f;
-        [SerializeField] private float _hoverScale = 1.05f;
-        [SerializeField] private float _animationDuration = 0.1f;
+        private float _clickScale = 0.95f;
+        private float _hoverScale = 1.05f;
+        private float _animationDuration = 0.1f;
         [SerializeField] private Ease _animationEase = Ease.OutBack;
 
         private Vector3 _originalScale;

@@ -38,6 +38,8 @@ namespace LuckyDefense
         
         protected int mySummonCount = 0;
         protected int aiSummonCount = 0;
+        
+        private const int SELL_PRICE = 10;
 
         protected virtual void Start()
         {
@@ -146,7 +148,6 @@ namespace LuckyDefense
             }
             return 10 + (aiSummonCount * 10);
         }
-        
 
         protected virtual int GetRandomTowerType()
         {
@@ -464,6 +465,138 @@ namespace LuckyDefense
 
             tower1.transform.position = target1;
             tower2.transform.position = target2;
+        }
+
+        public bool MixPlayerTower(int row, int col)
+        {
+            if (!IsValidPosition(row, col)) return false;
+            
+            TowerSlot slot = myTowerGrid[row, col];
+            
+            if (slot.IsEmpty || !slot.IsFull) return false;
+            if (slot.towerTypeId >= 5) return false;
+            
+            int upgradedTypeId = GetUpgradedTowerType(slot.towerTypeId);
+            if (upgradedTypeId == 0) return false;
+            
+            RemovePlayerTower(row, col);
+            
+            Vector2Int targetSlot = FindSlotForMixedTower(upgradedTypeId);
+            
+            if (targetSlot.x != -1)
+            {
+                PlaceTowerForPlayer(targetSlot.x, targetSlot.y, upgradedTypeId);
+                Debug.Log($"타워 합성 완료: 위치 ({targetSlot.x}, {targetSlot.y})");
+            }
+            else
+            {
+                Debug.LogError("합성된 타워를 배치할 슬롯이 없습니다.");
+                return false;
+            }
+            
+            return true;
+        }
+
+        private int GetUpgradedTowerType(int currentTypeId)
+        {
+            if (currentTypeId == 1 || currentTypeId == 2)
+            {
+                return Random.Range(3, 5);
+            }
+            else if (currentTypeId == 3 || currentTypeId == 4)
+            {
+                return Random.Range(5, 7);
+            }
+            
+            return 0;
+        }
+
+        private Vector2Int FindSlotForMixedTower(int towerTypeId)
+        {
+            for (int row = 0; row < 3; row++)
+            {
+                for (int col = 0; col < 6; col++)
+                {
+                    TowerSlot slot = myTowerGrid[row, col];
+                    
+                    if (!slot.IsEmpty && slot.towerTypeId == towerTypeId && slot.CanAddStack)
+                    {
+                        return new Vector2Int(row, col);
+                    }
+                }
+            }
+            
+            for (int row = 0; row < 3; row++)
+            {
+                for (int col = 0; col < 6; col++)
+                {
+                    TowerSlot slot = myTowerGrid[row, col];
+                    
+                    if (slot.IsEmpty)
+                    {
+                        return new Vector2Int(row, col);
+                    }
+                }
+            }
+            
+            return new Vector2Int(-1, -1);
+        }
+
+        public bool SellPlayerTower(int row, int col)
+        {
+            if (!IsValidPosition(row, col)) return false;
+            
+            TowerSlot slot = myTowerGrid[row, col];
+            if (slot.IsEmpty) return false;
+            
+            if (slot.stackCount > 1)
+            {
+                slot.stackCount--;
+                slot.towerGroup.RemoveTower();
+                
+                if (gameManager != null)
+                {
+                    gameManager.AddGold(SELL_PRICE);
+                }
+                
+                Debug.Log($"타워 1개 판매: 위치 ({row}, {col}), 남은 스택: {slot.stackCount}");
+            }
+            else
+            {
+                RemovePlayerTower(row, col);
+                
+                if (gameManager != null)
+                {
+                    gameManager.AddGold(SELL_PRICE);
+                }
+                
+                Debug.Log($"타워 전체 판매: 위치 ({row}, {col})");
+            }
+            
+            return true;
+        }
+
+        public bool CanMixTower(int row, int col)
+        {
+            if (!IsValidPosition(row, col)) return false;
+            
+            TowerSlot slot = myTowerGrid[row, col];
+            
+            return !slot.IsEmpty && slot.IsFull && slot.towerTypeId < 5;
+        }
+        
+        public bool SpawnGamblingTower(int towerTypeId)
+        {
+            Vector2Int bestSlot = FindBestSlotForPlayer(towerTypeId);
+            if (bestSlot.x == -1)
+            {
+                Debug.Log("도박 타워 배치 가능한 슬롯 없음");
+                return false;
+            }
+            
+            PlaceTowerForPlayer(bestSlot.x, bestSlot.y, towerTypeId);
+            Debug.Log($"도박 타워 생성 완료: 타입 {towerTypeId}, 위치 ({bestSlot.x}, {bestSlot.y})");
+            return true;
         }
 
         public bool IsValidPosition(int row, int col)

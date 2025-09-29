@@ -22,6 +22,10 @@ namespace LuckyDefense
         private const float gamblingNormalPercent = 60f;
         private const float gamblingRarePercent = 20f;
         private const float gamblingHeroPercent = 10f;
+
+        private const int gamblingNormalGemCost = 1;
+        private const int gamblingRareGemCost = 1;
+        private const int gamblingHeroGemCost = 2;
         
         [SerializeField] private int aiGold = 100;
         [SerializeField] private int aiGem = 0;
@@ -123,6 +127,74 @@ namespace LuckyDefense
             {
                 UIManager.Instance.PlayGemAnimation(amount);
             }
+        }
+        
+        public bool GambleNormalTower()
+        {
+            if (myGem < gamblingNormalGemCost)
+            {
+                Debug.Log($"젬 부족: 필요 {gamblingNormalGemCost}, 보유 {myGem}");
+                return false;
+            }
+            
+            myGem -= gamblingNormalGemCost;
+            
+            float randomValue = UnityEngine.Random.Range(0f, 100f);
+            
+            if (randomValue < gamblingNormalPercent)
+            {
+                int normalTypeId = UnityEngine.Random.Range(1, 3);
+                return SpawnGamblingTower(normalTypeId);
+            }
+            return false;
+        }
+
+        public bool GambleRareTower()
+        {
+            if (myGem < gamblingRareGemCost)
+            {
+                Debug.Log($"젬 부족: 필요 {gamblingRareGemCost}, 보유 {myGem}");
+                return false;
+            }
+            
+            myGem -= gamblingRareGemCost;
+            
+            float randomValue = UnityEngine.Random.Range(0f, 100f);
+            
+            if (randomValue < gamblingRarePercent)
+            {
+                int rareTypeId = UnityEngine.Random.Range(3, 5);
+                return SpawnGamblingTower(rareTypeId);
+            }
+            return false;
+        }
+
+        public bool GambleHeroTower()
+        {
+            if (myGem < gamblingHeroGemCost)
+            {
+                Debug.Log($"젬 부족: 필요 {gamblingHeroGemCost}, 보유 {myGem}");
+                return false;
+            }
+            
+            myGem -= gamblingHeroGemCost;
+            
+            float randomValue = UnityEngine.Random.Range(0f, 100f);
+            
+            if (randomValue < gamblingHeroPercent)
+            {
+                int heroTypeId = UnityEngine.Random.Range(5, 7);
+                return SpawnGamblingTower(heroTypeId);
+            }
+            return false;
+        }
+
+        private bool SpawnGamblingTower(int towerTypeId)
+        {
+            TowerManager towerManager = FindObjectOfType<TowerManager>();
+            if (towerManager == null) return false;
+            
+            return towerManager.SpawnGamblingTower(towerTypeId);
         }
     }
 }
