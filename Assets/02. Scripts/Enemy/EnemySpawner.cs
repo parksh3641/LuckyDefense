@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace LuckyDefense
 {
@@ -11,11 +12,14 @@ namespace LuckyDefense
 
         [Header("Enemy Settings")] 
         [SerializeField] private GameObject enemyPrefab;
-        [SerializeField] private GameObject bossPrefab;
         [SerializeField] private Transform[] waypointPath1;
         [SerializeField] private Transform[] waypointPath2;
         [SerializeField] private Transform enemyParent;
         [SerializeField] private int poolSize = 100;
+        
+        [Header("Boss & MiniBoss Settings")]
+        [SerializeField] private GameObject bossPrefab;
+        [SerializeField] private GameObject miniBossPrefab;
 
         [Header("Spawn Settings")]
         [SerializeField] private float spawnInterval = 0.5f;
@@ -33,6 +37,7 @@ namespace LuckyDefense
 
         private List<GameObject> enemyPool = new List<GameObject>();
         private List<GameObject> bossPool = new List<GameObject>();
+        private List<GameObject> miniBossPool = new List<GameObject>();
         private List<Enemy> activeEnemies = new List<Enemy>();
         private List<GameObject> damageTextPool = new List<GameObject>();
         private CSVLoadManager csvManager;
@@ -40,6 +45,8 @@ namespace LuckyDefense
         private Vector3[] path1Positions;
         private Vector3[] path2Positions;
         private int damageTextPoolIndex = 0;
+        private int miniBossSpawnCount = 0;
+        private int bossSpawnCount = 0;
 
         private int currentWaveIndex = 1;
         private bool isWaveActive = false;
@@ -57,11 +64,12 @@ namespace LuckyDefense
                 Destroy(gameObject);
                 return;
             }
+            
+            csvManager = CSVLoadManager.Instance;
         }
 
         private void Start()
         {
-            csvManager = CSVLoadManager.Instance;
             InitializeEnemyPool();
             InitializeDamageTextPool();
             CacheWaypointPositions();
@@ -80,13 +88,25 @@ namespace LuckyDefense
 
             if (bossPrefab != null)
             {
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 2; i++)
                 {
                     GameObject boss = Instantiate(bossPrefab);
                     boss.transform.SetParent(enemyParent);
                     boss.name = $"Boss_{i}";
                     boss.SetActive(false);
                     bossPool.Add(boss);
+                }
+            }
+
+            if (miniBossPrefab != null)
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    GameObject miniBoss = Instantiate(miniBossPrefab);
+                    miniBoss.transform.SetParent(enemyParent);
+                    miniBoss.name = $"MiniBoss_{i}";
+                    miniBoss.SetActive(false);
+                    miniBossPool.Add(miniBoss);
                 }
             }
         }
@@ -137,7 +157,7 @@ namespace LuckyDefense
             if (isWaveActive) return;
 
             Debug.Log($"StartWave 호출됨 - Arena: {currentArena}, WaveIndex: {currentWaveIndex}");
-    
+            
             currentWaveData = csvManager.GetWaveDataByWaveIndex(currentArena, currentWaveIndex);
     
             if (currentWaveData == null)
@@ -165,6 +185,21 @@ namespace LuckyDefense
 
         private IEnumerator ProcessWave()
         {
+            if (currentWaveData.IsBoss)
+            {
+                Vector3 spawnPosition1 = waypointPath1[0].position;
+                Vector3 spawnPosition2 = waypointPath2[0].position;
+
+                yield return new WaitForSeconds(pathDelay);
+                SpawnBoss(spawnPosition1, path1Positions);
+                SpawnBoss(spawnPosition2, path2Positions);
+        
+                isWaveActive = false;
+                
+                Debug.Log("보스 소환");
+                yield break;
+            }
+
             float waveDuration = currentWaveData.Wave_Time;
             float endTime = Time.time + waveDuration;
             bool spawnPath1 = true;
@@ -177,14 +212,7 @@ namespace LuckyDefense
                     Vector3[] targetPath = spawnPath1 ? path1Positions : path2Positions;
                     Vector3 spawnPosition = spawnPath1 ? waypointPath1[0].position : waypointPath2[0].position;
 
-                    if (currentWaveData.IsBoss)
-                    {
-                        SpawnBoss(spawnPosition, targetPath);
-                    }
-                    else
-                    {
-                        SpawnEnemy(currentWaveData.Monster_ID, spawnPosition, targetPath);
-                    }
+                    SpawnEnemy(currentWaveData.Monster_ID, spawnPosition, targetPath);
 
                     lastSpawnTime = Time.time;
                     spawnPath1 = !spawnPath1;
@@ -389,6 +417,100 @@ namespace LuckyDefense
         private void OnDestroy()
         {
             StopWave();
+        }
+        
+        private GameObject GetPooledMiniBoss()
+        {
+            foreach (GameObject miniBoss in miniBossPool)
+            {
+                if (!miniBoss.activeInHierarchy)
+                {
+                    return miniBoss;
+                }
+            }
+            return null;
+        }
+        
+        public void SpawnMiniBoss()
+        {
+            Vector3 spawnPosition1 = waypointPath1[0].position;
+            Vector3 spawnPosition2 = waypointPath2[0].position;
+
+            GameObject miniBoss1 = GetPooledMiniBoss();
+            if (miniBoss1 != null)
+            {
+                miniBoss1.transform.position = spawnPosition1;
+                miniBoss1.SetActive(true);
+
+                Enemy enemy1 = miniBoss1.GetComponent<Enemy>();
+                if (enemy1 != null)
+                {
+                    enemy1.Initialize(path1Positions, this);
+                    SetupMiniBossStats(enemy1);
+                    activeEnemies.Add(enemy1);
+                }
+            }
+
+            GameObject miniBoss2 = GetPooledMiniBoss();
+            if (miniBoss2 != null)
+            {
+                miniBoss2.transform.position = spawnPosition2;
+                miniBoss2.SetActive(true);
+
+                Enemy enemy2 = miniBoss2.GetComponent<Enemy>();
+                if (enemy2 != null)
+                {
+                    enemy2.Initialize(path2Positions, this);
+                    SetupMiniBossStats(enemy2);
+                    activeEnemies.Add(enemy2);
+                }
+            }
+
+            miniBossSpawnCount++;
+        }
+
+        private void SetupMiniBossStats(Enemy enemy)
+        {
+            BossData miniBossData = csvManager.GetBossData(1);
+            if (miniBossData != null)
+            {
+                float hpMultiplier = 1f + (miniBossSpawnCount * 0.5f);
+        
+                enemy.SetStats(
+                    Mathf.RoundToInt(miniBossData.HP * hpMultiplier),
+                    miniBossData.Move_Speed,
+                    miniBossData.ATK,
+                    miniBossData.Gold
+                );
+            }
+            else
+            {
+                float hpMultiplier = 1f + (miniBossSpawnCount * 0.5f);
+                int waveMultiplier = currentWaveIndex;
+        
+                enemy.SetStats(
+                    Mathf.RoundToInt(300 * waveMultiplier * hpMultiplier),
+                    1.5f,
+                    30 * waveMultiplier,
+                    80 * waveMultiplier
+                );
+            }
+        }
+
+        public void ResetMiniBossSpawnCount()
+        {
+            miniBossSpawnCount = 0;
+        }
+
+        public void ResetBossSpawnCount()
+        {
+            bossSpawnCount = 0;
+        }
+
+        public void ResetAllSpawnCounts()
+        {
+            miniBossSpawnCount = 0;
+            bossSpawnCount = 0;
         }
     }
 }

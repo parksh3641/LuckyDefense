@@ -17,7 +17,7 @@ namespace LuckyDefense
         private bool _isPressed;
         private Transform _transform;
 
-        private void Start()
+        private void Awake()
         {
             _transform = transform;
             _originalScale = _transform.localScale;
@@ -60,8 +60,11 @@ namespace LuckyDefense
 
         private void OnDisable()
         {
-            _transform.DOKill();
-            _transform.localScale = _originalScale;
+            if (_transform != null)
+            {
+                _transform.DOKill();
+                _transform.localScale = _originalScale;
+            }
         }
     }
 }

@@ -1,4 +1,2 @@
 ﻿ID,Asset_ID,Type,Move_Speed,HP,Gold,ATK,Value_1,Value_2,Value_3,Value_4,Value_5
-1,,,0.75,100,10,4,,,,,
-2,1,,0.75,500,10,10,,,,,
-3,2,,1.5,100,10,8,,,,,
+1,,,1,100,1,0,,,,,

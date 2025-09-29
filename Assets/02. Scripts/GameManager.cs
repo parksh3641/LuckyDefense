@@ -108,5 +108,11 @@ namespace LuckyDefense
             myGold += amount;
             aiGold += amount;
         }
+
+        public void AddGem(int amount)
+        {
+            myGem += amount;
+            aiGem += amount;
+        }
     }
 }

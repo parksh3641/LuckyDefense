@@ -185,7 +185,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 25
@@ -283,6 +283,7 @@ MonoBehaviour:
   goldReward: 10
   hpViewer: {fileID: 1909868418286403311}
   hpFillAmount: {fileID: 3234607810417008513}
+  hpText: {fileID: 8721589969413772394}
   skeletonAnimation: {fileID: 419502524280398999}
   boxCollider: {fileID: 7246136076831717243}
   effect: {fileID: 8376958142985027955}
@@ -319,6 +320,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: SliderEnemyHP
+      objectReference: {fileID: 0}
+    - target: {fileID: 1871605289747570571, guid: 60f6cb1947fdaf345a9093ae98c9d4da,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8793322056519107300, guid: 60f6cb1947fdaf345a9093ae98c9d4da,
         type: 3}
@@ -449,6 +455,18 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 1239272015606399109}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8721589969413772394 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7510746935457338607, guid: 60f6cb1947fdaf345a9093ae98c9d4da,
+    type: 3}
+  m_PrefabInstance: {fileID: 1239272015606399109}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &7953989459027459347
 PrefabInstance:
   m_ObjectHideFlags: 0

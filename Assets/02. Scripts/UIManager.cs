@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 
 namespace LuckyDefense
@@ -14,11 +15,14 @@ namespace LuckyDefense
         [SerializeField] private GameObject mainViewObject;
         [SerializeField] private GameObject upgradeViewObject;
         [SerializeField] private GameObject gamblingViewObject;
+        [SerializeField] private GameObject gameOverViewObject;
+        [SerializeField] private GameObject gameWinViewObject;
         
         [Header("Buttons")]
         [SerializeField] private Button spawnBtn;
         [SerializeField] private Button upgradeViewBtn;
         [SerializeField] private Button gamblingViewBtn;
+        [SerializeField] private Button miniBossSpawnBtn;
         
         [Header("UI Text")]
         [SerializeField] private TextMeshProUGUI[] goldText;
@@ -39,6 +43,10 @@ namespace LuckyDefense
         
         [Header("Enemy Settings")]
         [SerializeField] private int maxEnemyCount = 100;
+        [SerializeField] private float miniBossSpawnInterval = 60f;
+        
+        private float miniBossTimer = 0f;
+        private bool miniBossTimerActive = false;
 
         private void Awake()
         {
@@ -52,6 +60,7 @@ namespace LuckyDefense
 
         private void Start()
         {
+            StartMiniBossTimer();
             StartCoroutine(UpdateUICoroutine());
         }
 
@@ -70,6 +79,7 @@ namespace LuckyDefense
             {
                 yield return waitTime;
                 UpdateAllUI();
+                UpdateMiniBossTimer();
             }
         }
 
@@ -78,6 +88,9 @@ namespace LuckyDefense
             spawnBtn.onClick.AddListener(() => towerManager.SpawnRandomTowerForPlayer());
             upgradeViewBtn.onClick.AddListener(ToggleUpgradeView);
             gamblingViewBtn.onClick.AddListener(ToggleGamblingView);
+            miniBossSpawnBtn.onClick.AddListener(OnMiniBossButtonClicked);
+    
+            miniBossSpawnBtn.gameObject.SetActive(false);
         }
 
         private void SetInitialViewState()
@@ -85,6 +98,8 @@ namespace LuckyDefense
             mainViewObject.SetActive(true);
             upgradeViewObject.SetActive(false);
             gamblingViewObject.SetActive(false);
+            gameOverViewObject.SetActive(false);
+            gameWinViewObject.SetActive(false);
         }
         
         public void ToggleUpgradeView()
@@ -95,6 +110,22 @@ namespace LuckyDefense
         public void ToggleGamblingView()
         {
             gamblingViewObject.SetActive(!gamblingViewObject.activeInHierarchy);
+        }
+        
+        public void ShowGameOverUI()
+        {
+            if (gameOverViewObject != null)
+            {
+                gameOverViewObject.SetActive(true);
+            }
+        }
+
+        public void ShowGameWinUI()
+        {
+            if (gameWinViewObject != null)
+            {
+                gameWinViewObject.SetActive(true);
+            }
         }
 
         private void UpdateAllUI()
@@ -210,6 +241,62 @@ namespace LuckyDefense
         {
             waveUI.gameObject.SetActive(true);
             waveUI.SetWaveText(number);
+        }
+        
+        private void UpdateMiniBossTimer()
+        {
+            if (!miniBossTimerActive) return;
+
+            bool wasMiniBossAlive = IsMiniBossAlive();
+    
+            miniBossTimer -= 0.1f;
+
+            if (miniBossTimer <= 0f)
+            {
+                if (!IsMiniBossAlive())
+                {
+                    miniBossSpawnBtn.gameObject.SetActive(true);
+                    miniBossTimerActive = false;
+                }
+                else
+                {
+                    miniBossTimer = miniBossSpawnInterval;
+                }
+            }
+    
+            if (wasMiniBossAlive && !IsMiniBossAlive())
+            {
+                miniBossTimer = miniBossSpawnInterval;
+            }
+        }
+        
+        private void OnMiniBossButtonClicked()
+        {
+            if (EnemySpawner.Instance != null)
+            {
+                EnemySpawner.Instance.SpawnMiniBoss();
+            }
+    
+            miniBossSpawnBtn.gameObject.SetActive(false);
+            miniBossTimer = miniBossSpawnInterval;
+        }
+
+        private bool IsMiniBossAlive()
+        {
+            GameObject[] miniBosses = GameObject.FindGameObjectsWithTag("MiniBoss");
+            return miniBosses != null && miniBosses.Length > 0;
+        }
+        
+        public void StartMiniBossTimer()
+        {
+            miniBossTimerActive = true;
+            miniBossTimer = miniBossSpawnInterval;
+            miniBossSpawnBtn.gameObject.SetActive(false);
+        }
+
+        public void RetryButtonClicked()
+        {
+            SceneManager.LoadScene("MainScene");
         }
     }
 }

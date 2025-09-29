@@ -76,6 +76,9 @@ namespace LuckyDefense
 
         private void HandleInput()
         {
+            if (WaveManager.Instance == null || !WaveManager.Instance.GameStarted)
+                return;
+            
             if (Input.GetMouseButtonDown(0))
             {
                 if (IsPointerOverUI()) return;

@@ -13,7 +13,7 @@ namespace LuckyDefense
         [SerializeField] private bool autoStartNextWave = true;
         
         [Header("Scaling Settings")]
-        [SerializeField] private float healthIncreasePerWave = 0.2f;
+        [SerializeField] private float healthIncreasePerWave = 0.5f;
         
         private CSVLoadManager csvManager;
         private EnemySpawner enemySpawner;
@@ -21,7 +21,7 @@ namespace LuckyDefense
         private bool isWaveActive = false;
         private float waveTimer = 0f;
         private bool gameStarted = false;
-        private WaveData currentWaveData;
+        private WaveData currentWaveData = new WaveData();
 
         public int CurrentWaveIndex => currentWaveIndex;
         public bool IsWaveActive => isWaveActive;
@@ -42,10 +42,7 @@ namespace LuckyDefense
             {
                 Destroy(gameObject);
             }
-        }
-
-        private void Start()
-        {
+            
             csvManager = CSVLoadManager.Instance;
             enemySpawner = EnemySpawner.Instance;
         }
@@ -58,6 +55,12 @@ namespace LuckyDefense
 
             if (waveTimer <= 0f)
             {
+                if (IsCurrentWaveBoss && IsBossStillAlive())
+                {
+                    TriggerGameOver();
+                    return;
+                }
+
                 if (autoStartNextWave)
                 {
                     StartNextWave();
@@ -66,6 +69,28 @@ namespace LuckyDefense
                 {
                     isWaveActive = false;
                 }
+            }
+        }
+
+        private bool IsBossStillAlive()
+        {
+            GameObject[] bosses = GameObject.FindGameObjectsWithTag("Boss");
+            return bosses != null && bosses.Length > 0;
+        }
+
+        private void TriggerGameOver()
+        {
+            isWaveActive = false;
+            gameStarted = false;
+    
+            if (EnemySpawner.Instance != null)
+            {
+                EnemySpawner.Instance.StopWave();
+            }
+            
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.ShowGameOverUI();
             }
         }
 
@@ -141,6 +166,12 @@ namespace LuckyDefense
             if (!gameStarted) return "Wave -";
             string bossText = IsCurrentWaveBoss ? " (BOSS)" : "";
             return $"Wave {currentWaveIndex}{bossText}";
+        }
+        
+        public bool IsLastWave()
+        {
+            int maxWave = csvManager.GetMaxWaveIndex(currentArenaType);
+            return currentWaveIndex >= maxWave;
         }
     }
 }

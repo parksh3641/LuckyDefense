@@ -2,6 +2,7 @@
 using Spine;
 using UnityEngine;
 using Spine.Unity;
+using TMPro;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
@@ -10,19 +11,21 @@ namespace LuckyDefense
     public class Enemy : MonoBehaviour
     {
         [Header("Enemy Stats")]
-        [SerializeField] private float maxHP = 100f;
-        [SerializeField] private float moveSpeed = 2f;
-        [SerializeField] private int attackDamage = 10;
-        [SerializeField] private int goldReward = 10;
+        [SerializeField] private float maxHP = 0;
+        [SerializeField] private float moveSpeed = 0;
+        [SerializeField] private int attackDamage = 0;
+        [SerializeField] private int goldReward = 0;
 
         [SerializeField] private GameObject hpViewer;
         [SerializeField] private Image hpFillAmount;
+        [SerializeField] private TMP_Text hpText;
         
         [Header("Components")]
         [SerializeField] private SkeletonAnimation skeletonAnimation;
         [SerializeField] private BoxCollider boxCollider;
 
-        [Header("Effect")] [SerializeField] private SkeletonAnimation effect;
+        [Header("Effect")] 
+        [SerializeField] private SkeletonAnimation effect;
         
         private Vector3[] waypoints;
         private int currentWaypointIndex = 0;
@@ -30,6 +33,10 @@ namespace LuckyDefense
         private float currentHP;
         private bool isDead = false;
         private bool isMoving = true;
+        
+        private float miniBossLifeTime = 60f;
+        private float miniBossTimer = 0f;
+        private bool isMiniBoss = false;
         
         public float MaxHP => maxHP;
         public int GoldReward => goldReward;
@@ -67,12 +74,17 @@ namespace LuckyDefense
                 transform.position = waypoints[0];
                 currentWaypointIndex = 1;
             }
-            
+    
             if (effect != null)
-                effect.gameObject.SetActive(false); 
+                effect.gameObject.SetActive(false);
+    
+            isMiniBoss = gameObject.CompareTag("MiniBoss");
+            if (isMiniBoss)
+            {
+                miniBossTimer = miniBossLifeTime;
+            }
         }
-
-
+        
         public void SetStats(int hp, float speed, int atk, int gold)
         {
             maxHP = hp;
@@ -84,8 +96,20 @@ namespace LuckyDefense
 
         private void Update()
         {
-            if (isDead || !isMoving) return;
-            
+            if (isDead) return;
+    
+            if (isMiniBoss)
+            {
+                miniBossTimer -= Time.deltaTime;
+                if (miniBossTimer <= 0f)
+                {
+                    DieByTimeout();
+                    return;
+                }
+            }
+    
+            if (!isMoving) return;
+    
             MoveToNextWaypoint();
         }
 
@@ -160,9 +184,17 @@ namespace LuckyDefense
         
         private void UpdateHPUI()
         {
-            if (hpFillAmount == null || hpViewer == null) return;
+            if (hpViewer == null) return;
 
-            hpFillAmount.fillAmount = currentHP / maxHP;
+            if (hpFillAmount != null)
+            {
+                hpFillAmount.fillAmount = currentHP / maxHP;
+            }
+
+            if (hpText != null)
+            {
+                hpText.text = $"{(int)currentHP}";
+            }
 
             Transform rootParent = hpViewer.transform;
             while (rootParent.parent != null)
@@ -181,22 +213,59 @@ namespace LuckyDefense
         private void Die()
         {
             if (isDead) return;
-    
+
             isDead = true;
             isMoving = false;
-    
+
             if (boxCollider != null)
                 boxCollider.enabled = false;
-            
+       
             if(hpViewer != null)
                 hpViewer.SetActive(false);
-        
+
             PlayAnimation("dead");
-            
+       
             if(GameManager.Instance != null)
-                GameManager.Instance.AddGold(1);
-    
+            {
+                if (gameObject.CompareTag("MiniBoss") || gameObject.CompareTag("Boss"))
+                {
+                    GameManager.Instance.AddGem(2);
+               
+                    if (gameObject.CompareTag("Boss"))
+                    {
+                        CheckBossDefeatForVictory();
+                    }
+                }
+                else if (gameObject.CompareTag("Enemy"))
+                {
+                    GameManager.Instance.AddGold(1);
+                }
+            }
+
             StartCoroutine(DestroyAfterDelay());
+        }
+
+        private void CheckBossDefeatForVictory()
+        {
+            if (WaveManager.Instance != null && WaveManager.Instance.IsLastWave())
+            {
+                StartCoroutine(CheckVictoryAfterDelay());
+            }
+        }
+
+        private IEnumerator CheckVictoryAfterDelay()
+        {
+            yield return new WaitForSeconds(0.5f);
+       
+            GameObject[] remainingBosses = GameObject.FindGameObjectsWithTag("Boss");
+            if (remainingBosses.Length == 0)
+            {
+                if (UIManager.Instance != null)
+                {
+                    Time.timeScale = 0f;
+                    UIManager.Instance.ShowGameWinUI();
+                }
+            }
         }
 
         private IEnumerator DestroyAfterDelay()
@@ -231,6 +300,24 @@ namespace LuckyDefense
                 isMoving = true;
                 PlayAnimation("run");
             }
+        }
+        
+        private void DieByTimeout()
+        {
+            if (isDead) return;
+
+            isDead = true;
+            isMoving = false;
+
+            if (boxCollider != null)
+                boxCollider.enabled = false;
+    
+            if(hpViewer != null)
+                hpViewer.SetActive(false);
+
+            PlayAnimation("dead");
+
+            StartCoroutine(DestroyAfterDelay());
         }
     }
 }

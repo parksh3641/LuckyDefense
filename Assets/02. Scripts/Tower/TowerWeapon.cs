@@ -212,7 +212,7 @@ namespace LuckyDefense
             
             foreach (var collider in enemyColliders)
             {
-                if (collider.CompareTag("Enemy") || collider.CompareTag("Monster"))
+                if (collider.CompareTag("Enemy") || collider.CompareTag("MiniBoss")|| collider.CompareTag("Boss"))
                 {
                     enemiesInRange.Add(collider.transform);
                 }
