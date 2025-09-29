@@ -15,6 +15,9 @@ namespace LuckyDefense
         [Header("Scaling Settings")]
         [SerializeField] private float healthIncreasePerWave = 0.5f;
         
+        [Header("Enemy Limit Settings")]
+        [SerializeField] private float enemyCheckInterval = 0.5f;
+        
         private CSVLoadManager csvManager;
         private EnemySpawner enemySpawner;
         private int currentWaveIndex = 0;
@@ -22,6 +25,7 @@ namespace LuckyDefense
         private float waveTimer = 0f;
         private bool gameStarted = false;
         private WaveData currentWaveData = new WaveData();
+        private float enemyCheckTimer = 0f;
 
         public int CurrentWaveIndex => currentWaveIndex;
         public bool IsWaveActive => isWaveActive;
@@ -52,6 +56,13 @@ namespace LuckyDefense
             if (!gameStarted || !isWaveActive) return;
 
             waveTimer -= Time.deltaTime;
+            enemyCheckTimer += Time.deltaTime;
+
+            if (enemyCheckTimer >= enemyCheckInterval)
+            {
+                enemyCheckTimer = 0f;
+                CheckEnemyLimit();
+            }
 
             if (waveTimer <= 0f)
             {
@@ -69,6 +80,15 @@ namespace LuckyDefense
                 {
                     isWaveActive = false;
                 }
+            }
+        }
+
+        private void CheckEnemyLimit()
+        {
+            if (UIManager.Instance != null && UIManager.Instance.IsEnemyCountAtMax())
+            {
+                Debug.Log("적 수가 최대치를 초과했습니다. 게임 오버!");
+                TriggerGameOver();
             }
         }
 
@@ -98,6 +118,7 @@ namespace LuckyDefense
         {
             gameStarted = true;
             currentWaveIndex = 0;
+            enemyCheckTimer = 0f;
             StartNextWave();
         }
 

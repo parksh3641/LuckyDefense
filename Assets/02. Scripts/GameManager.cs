@@ -82,6 +82,8 @@ namespace LuckyDefense
 
                     myGold = 9999;
                     aiGold = 9999;
+                    myGem = 9999;
+                    aiGem = 9999;
                 }
                 
                 var initialSummonCost = csvManager.GetSummonCostData(1);
@@ -140,6 +142,15 @@ namespace LuckyDefense
                 return false;
             }
             
+            TowerManager towerManager = FindObjectOfType<TowerManager>();
+            if (towerManager == null) return false;
+            
+            if (towerManager.GetPlayerTotalTowerCount() >= myMaxUnitCount)
+            {
+                Debug.Log("최대 유닛 수 도달");
+                return false;
+            }
+            
             myGem -= gamblingNormalGemCost;
             
             float randomValue = UnityEngine.Random.Range(0f, 100f);
@@ -149,6 +160,8 @@ namespace LuckyDefense
                 int normalTypeId = UnityEngine.Random.Range(1, 3);
                 return SpawnGamblingTower(normalTypeId);
             }
+            
+            Debug.Log("Normal 도박 실패");
             return false;
         }
 
@@ -157,6 +170,15 @@ namespace LuckyDefense
             if (myGem < gamblingRareGemCost)
             {
                 Debug.Log($"젬 부족: 필요 {gamblingRareGemCost}, 보유 {myGem}");
+                return false;
+            }
+            
+            TowerManager towerManager = FindObjectOfType<TowerManager>();
+            if (towerManager == null) return false;
+            
+            if (towerManager.GetPlayerTotalTowerCount() >= myMaxUnitCount)
+            {
+                Debug.Log("최대 유닛 수 도달");
                 return false;
             }
             
@@ -169,6 +191,8 @@ namespace LuckyDefense
                 int rareTypeId = UnityEngine.Random.Range(3, 5);
                 return SpawnGamblingTower(rareTypeId);
             }
+            
+            Debug.Log("Rare 도박 실패");
             return false;
         }
 
@@ -177,6 +201,15 @@ namespace LuckyDefense
             if (myGem < gamblingHeroGemCost)
             {
                 Debug.Log($"젬 부족: 필요 {gamblingHeroGemCost}, 보유 {myGem}");
+                return false;
+            }
+            
+            TowerManager towerManager = FindObjectOfType<TowerManager>();
+            if (towerManager == null) return false;
+            
+            if (towerManager.GetPlayerTotalTowerCount() >= myMaxUnitCount)
+            {
+                Debug.Log("최대 유닛 수 도달");
                 return false;
             }
             
@@ -189,6 +222,8 @@ namespace LuckyDefense
                 int heroTypeId = UnityEngine.Random.Range(5, 7);
                 return SpawnGamblingTower(heroTypeId);
             }
+            
+            Debug.Log("Hero 도박 실패");
             return false;
         }
 
@@ -198,6 +233,80 @@ namespace LuckyDefense
             if (towerManager == null) return false;
             
             return towerManager.SpawnGamblingTower(towerTypeId);
+        }
+        
+        public bool AIGambleNormalTower()
+        {
+            if (aiGem < gamblingNormalGemCost) return false;
+            
+            TowerManager towerManager = FindObjectOfType<TowerManager>();
+            if (towerManager == null) return false;
+            
+            if (towerManager.GetAITotalTowerCount() >= aiMaxUnitCount) return false;
+            
+            aiGem -= gamblingNormalGemCost;
+            
+            float randomValue = UnityEngine.Random.Range(0f, 100f);
+            
+            if (randomValue < gamblingNormalPercent)
+            {
+                int normalTypeId = UnityEngine.Random.Range(1, 3);
+                return SpawnAIGamblingTower(normalTypeId);
+            }
+            
+            return false;
+        }
+
+        public bool AIGambleRareTower()
+        {
+            if (aiGem < gamblingRareGemCost) return false;
+            
+            TowerManager towerManager = FindObjectOfType<TowerManager>();
+            if (towerManager == null) return false;
+            
+            if (towerManager.GetAITotalTowerCount() >= aiMaxUnitCount) return false;
+            
+            aiGem -= gamblingRareGemCost;
+            
+            float randomValue = UnityEngine.Random.Range(0f, 100f);
+            
+            if (randomValue < gamblingRarePercent)
+            {
+                int rareTypeId = UnityEngine.Random.Range(3, 5);
+                return SpawnAIGamblingTower(rareTypeId);
+            }
+            
+            return false;
+        }
+
+        public bool AIGambleHeroTower()
+        {
+            if (aiGem < gamblingHeroGemCost) return false;
+            
+            TowerManager towerManager = FindObjectOfType<TowerManager>();
+            if (towerManager == null) return false;
+            
+            if (towerManager.GetAITotalTowerCount() >= aiMaxUnitCount) return false;
+            
+            aiGem -= gamblingHeroGemCost;
+            
+            float randomValue = UnityEngine.Random.Range(0f, 100f);
+            
+            if (randomValue < gamblingHeroPercent)
+            {
+                int heroTypeId = UnityEngine.Random.Range(5, 7);
+                return SpawnAIGamblingTower(heroTypeId);
+            }
+            
+            return false;
+        }
+
+        private bool SpawnAIGamblingTower(int towerTypeId)
+        {
+            TowerManager towerManager = FindObjectOfType<TowerManager>();
+            if (towerManager == null) return false;
+            
+            return towerManager.SpawnAIGamblingTower(towerTypeId);
         }
     }
 }

@@ -871,10 +871,10 @@ RectTransform:
   - {fileID: 619356671}
   m_Father: {fileID: 664493895}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 200, y: -125}
+  m_SizeDelta: {x: 150, y: 220}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &65382103
 CanvasRenderer:
@@ -1786,10 +1786,10 @@ RectTransform:
   - {fileID: 1044663734}
   m_Father: {fileID: 664493895}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 360, y: -125}
+  m_SizeDelta: {x: 150, y: 220}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &188615419
 CanvasRenderer:
@@ -5992,8 +5992,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1857c8236c3da9642ba918e651e51de9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  myGold: 9999
-  myGem: 9999
+  myGold: 0
+  myGem: 0
   myMaxUnitCount: 25
   mySummonCost: 0
   aiGold: 0
@@ -9584,7 +9584,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &985488246
 RectTransform:
   m_ObjectHideFlags: 0
@@ -9748,6 +9748,7 @@ MonoBehaviour:
   maxSummonInterval: 1.5
   enableRandomInterval: 1
   aiActive: 1
+  actionDelay: 1
   towerManager: {fileID: 88263763}
   gameManager: {fileID: 618888923}
 --- !u!1001 &1008571124
@@ -13233,7 +13234,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC804\uC124~\uC2E0\uD654"
+  m_text: "\uC2E0\uD654"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: daf6577656e87f04a813dba3b5e49c39, type: 2}
   m_sharedMaterial: {fileID: -8073183265138096192, guid: daf6577656e87f04a813dba3b5e49c39,
@@ -17836,6 +17837,7 @@ MonoBehaviour:
   currentArenaType: 1
   autoStartNextWave: 1
   healthIncreasePerWave: 0.5
+  enemyCheckInterval: 0.5
 --- !u!1 &1914163428
 GameObject:
   m_ObjectHideFlags: 0

@@ -205,12 +205,16 @@ namespace LuckyDefense
 
         private void UpdateMaxCountUI()
         {
-            int currentCount = towerManager.GetTotalTowerCount();
-            string countString = $"{currentCount}/{gameManager.MyMaxUnitCount}";
-            
+            int currentCount = towerManager.GetPlayerTotalTowerCount();
+            int maxCount = gameManager.MyMaxUnitCount;
+            string countString = $"{currentCount}/{maxCount}";
+    
+            Color textColor = currentCount >= maxCount ? Color.red : Color.white;
+    
             for (int i = 0; i < maxCountText.Length; i++)
             {
                 maxCountText[i].text = countString;
+                maxCountText[i].color = textColor;
             }
         }
 

@@ -76,9 +76,15 @@ namespace LuckyDefense
 
         public virtual bool SpawnRandomTowerForPlayer()
         {
+            if (GetPlayerTotalTowerCount() >= gameManager.MyMaxUnitCount)
+            {
+                Debug.Log($"플레이어 최대 인구수 도달: {GetPlayerTotalTowerCount()}/{gameManager.MyMaxUnitCount}");
+                return false;
+            }
+
             int currentCost = GetMyCurrentSummonCost();
             int currentGold = gameManager.MyGold;
-    
+
             if (currentGold < currentCost) 
             {
                 Debug.Log($"플레이어 골드 부족: 필요 {currentCost}, 보유 {currentGold}");
@@ -105,9 +111,15 @@ namespace LuckyDefense
 
         public virtual bool SpawnRandomTowerForAI()
         {
+            if (GetAITotalTowerCount() >= gameManager.MyMaxUnitCount)
+            {
+                Debug.Log($"AI 최대 인구수 도달: {GetAITotalTowerCount()}/{gameManager.MyMaxUnitCount}");
+                return false;
+            }
+
             int currentCost = GetAiCurrentSummonCost();
             int currentGold = gameManager.AIGold;
-    
+
             if (currentGold < currentCost) 
             {
                 Debug.Log($"AI 골드 부족: 필요 {currentCost}, 보유 {currentGold}");
@@ -593,13 +605,19 @@ namespace LuckyDefense
         
         public bool SpawnGamblingTower(int towerTypeId)
         {
+            if (GetPlayerTotalTowerCount() >= gameManager.MyMaxUnitCount)
+            {
+                Debug.Log($"도박 타워 배치 불가: 최대 인구수 도달 {GetPlayerTotalTowerCount()}/{gameManager.MyMaxUnitCount}");
+                return false;
+            }
+    
             Vector2Int bestSlot = FindBestSlotForPlayer(towerTypeId);
             if (bestSlot.x == -1)
             {
                 Debug.Log("도박 타워 배치 가능한 슬롯 없음");
                 return false;
             }
-            
+    
             PlaceTowerForPlayer(bestSlot.x, bestSlot.y, towerTypeId);
             Debug.Log($"도박 타워 생성 완료: 타입 {towerTypeId}, 위치 ({bestSlot.x}, {bestSlot.y})");
             return true;
@@ -716,6 +734,205 @@ namespace LuckyDefense
             }
             return new Vector2Int(-1, -1);
         }
+        
+        public TowerSlot GetAITowerSlot(int row, int col)
+        {
+            if (!IsValidPosition(row, col)) return null;
+            return aiTowerGrid[row, col];
+        }
+        
+        public bool CanCombineAIMyth1()
+        {
+            return HasAITowerType(1) && HasAITowerType(3) && HasAITowerType(5) && HasAIEmptySlot();
+        }
+        
+        public bool CanCombineAIMyth2()
+        {
+            return HasAITowerType(2) && HasAITowerType(4) && HasAITowerType(6) && HasAIEmptySlot();
+        }
+        
+        private bool HasAITowerType(int towerTypeId)
+        {
+            for (int row = 0; row < 3; row++)
+            {
+                for (int col = 0; col < 6; col++)
+                {
+                    TowerSlot slot = aiTowerGrid[row, col];
+                    if (!slot.IsEmpty && slot.towerTypeId == towerTypeId && slot.stackCount > 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        private bool HasAIEmptySlot()
+        {
+            for (int row = 0; row < 3; row++)
+            {
+                for (int col = 0; col < 6; col++)
+                {
+                    if (aiTowerGrid[row, col].IsEmpty)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        public bool CombineAIMyth1()
+        {
+            if (!CanCombineAIMyth1()) return false;
+            
+            ConsumeAITowerType(1);
+            ConsumeAITowerType(3);
+            ConsumeAITowerType(5);
+            
+            Vector2Int emptySlot = GetFirstAIEmptySlot();
+            if (emptySlot.x == -1) return false;
+            
+            PlaceTowerForAI(emptySlot.x, emptySlot.y, 7);
+            Debug.Log("AI 신화 타워 7번 생성 완료");
+            return true;
+        }
+        
+        public bool CombineAIMyth2()
+        {
+            if (!CanCombineAIMyth2()) return false;
+            
+            ConsumeAITowerType(2);
+            ConsumeAITowerType(4);
+            ConsumeAITowerType(6);
+            
+            Vector2Int emptySlot = GetFirstAIEmptySlot();
+            if (emptySlot.x == -1) return false;
+            
+            PlaceTowerForAI(emptySlot.x, emptySlot.y, 8);
+            Debug.Log("AI 신화 타워 8번 생성 완료");
+            return true;
+        }
+        
+        private void ConsumeAITowerType(int towerTypeId)
+        {
+            for (int row = 0; row < 3; row++)
+            {
+                for (int col = 0; col < 6; col++)
+                {
+                    TowerSlot slot = aiTowerGrid[row, col];
+                    if (!slot.IsEmpty && slot.towerTypeId == towerTypeId && slot.stackCount > 0)
+                    {
+                        if (slot.stackCount > 1)
+                        {
+                            slot.stackCount--;
+                            slot.towerGroup.RemoveTower();
+                        }
+                        else
+                        {
+                            RemoveAITower(row, col);
+                        }
+                        return;
+                    }
+                }
+            }
+        }
+        
+        private Vector2Int GetFirstAIEmptySlot()
+        {
+            for (int row = 0; row < 3; row++)
+            {
+                for (int col = 0; col < 6; col++)
+                {
+                    if (aiTowerGrid[row, col].IsEmpty)
+                    {
+                        return new Vector2Int(row, col);
+                    }
+                }
+            }
+            return new Vector2Int(-1, -1);
+        }
+        
+        public bool MixAITower(int row, int col)
+        {
+            if (!IsValidPosition(row, col)) return false;
+            
+            TowerSlot slot = aiTowerGrid[row, col];
+            
+            if (slot.IsEmpty || !slot.IsFull) return false;
+            if (slot.towerTypeId >= 5) return false;
+            
+            int upgradedTypeId = GetUpgradedTowerType(slot.towerTypeId);
+            if (upgradedTypeId == 0) return false;
+            
+            RemoveAITower(row, col);
+            
+            Vector2Int targetSlot = FindSlotForAIMixedTower(upgradedTypeId);
+            
+            if (targetSlot.x != -1)
+            {
+                PlaceTowerForAI(targetSlot.x, targetSlot.y, upgradedTypeId);
+                Debug.Log($"AI 타워 합성 완료: 위치 ({targetSlot.x}, {targetSlot.y})");
+            }
+            else
+            {
+                Debug.LogError("AI 합성된 타워를 배치할 슬롯이 없습니다.");
+                return false;
+            }
+            
+            return true;
+        }
+        
+        private Vector2Int FindSlotForAIMixedTower(int towerTypeId)
+        {
+            for (int row = 0; row < 3; row++)
+            {
+                for (int col = 0; col < 6; col++)
+                {
+                    TowerSlot slot = aiTowerGrid[row, col];
+                    
+                    if (!slot.IsEmpty && slot.towerTypeId == towerTypeId && slot.CanAddStack)
+                    {
+                        return new Vector2Int(row, col);
+                    }
+                }
+            }
+            
+            for (int row = 0; row < 3; row++)
+            {
+                for (int col = 0; col < 6; col++)
+                {
+                    TowerSlot slot = aiTowerGrid[row, col];
+                    
+                    if (slot.IsEmpty)
+                    {
+                        return new Vector2Int(row, col);
+                    }
+                }
+            }
+            
+            return new Vector2Int(-1, -1);
+        }
+        
+        public bool SpawnAIGamblingTower(int towerTypeId)
+        {
+            if (GetAITotalTowerCount() >= gameManager.MyMaxUnitCount)
+            {
+                Debug.Log($"AI 도박 타워 배치 불가: 최대 인구수 도달 {GetAITotalTowerCount()}/{gameManager.MyMaxUnitCount}");
+                return false;
+            }
+    
+            Vector2Int bestSlot = FindBestSlotForAI(towerTypeId);
+            if (bestSlot.x == -1)
+            {
+                Debug.Log("AI 도박 타워 배치 가능한 슬롯 없음");
+                return false;
+            }
+    
+            PlaceTowerForAI(bestSlot.x, bestSlot.y, towerTypeId);
+            Debug.Log($"AI 도박 타워 생성 완료: 타입 {towerTypeId}, 위치 ({bestSlot.x}, {bestSlot.y})");
+            return true;
+        }
 
         public bool IsValidPosition(int row, int col)
         {
@@ -783,7 +1000,7 @@ namespace LuckyDefense
                 for (int col = 0; col < 6; col++)
                 {
                     if (!myTowerGrid[row, col].IsEmpty)
-                        count++;
+                        count += myTowerGrid[row, col].stackCount;
                 }
             }
             return count;
@@ -797,15 +1014,10 @@ namespace LuckyDefense
                 for (int col = 0; col < 6; col++)
                 {
                     if (!aiTowerGrid[row, col].IsEmpty)
-                        count++;
+                        count += aiTowerGrid[row, col].stackCount;
                 }
             }
             return count;
-        }
-
-        public virtual int GetTotalTowerCount()
-        {
-            return GetPlayerTotalTowerCount() + GetAITotalTowerCount();
         }
     }
 }
