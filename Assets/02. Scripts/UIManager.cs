@@ -24,6 +24,10 @@ namespace LuckyDefense
         [SerializeField] private Button gamblingViewBtn;
         [SerializeField] private Button miniBossSpawnBtn;
         
+        [Header("UI Animations")]
+        [SerializeField] private CoinAnimation[] coinAnimation;
+        [SerializeField] private CoinAnimation[] gemAnimation;
+        
         [Header("UI Text")]
         [SerializeField] private TextMeshProUGUI[] goldText;
         [SerializeField] private TextMeshProUGUI[] gemText;
@@ -56,6 +60,16 @@ namespace LuckyDefense
             SetInitialViewState();
             
             waveUI.gameObject.SetActive(false);
+            
+            for (int i = 0; i < coinAnimation.Length; i++)
+            {
+                coinAnimation[i].gameObject.SetActive(false);
+            }
+            
+            for (int i = 0; i < gemAnimation.Length; i++)
+            {
+                gemAnimation[i].gameObject.SetActive(false);
+            }
         }
 
         private void Start()
@@ -297,6 +311,32 @@ namespace LuckyDefense
         public void RetryButtonClicked()
         {
             SceneManager.LoadScene("MainScene");
+        }
+
+        public void PlayGoldAnimation(int amount)
+        {
+            for (int i = 0; i < coinAnimation.Length; i++)
+            {
+                if (coinAnimation[i] != null)
+                {
+                    coinAnimation[i].gameObject.SetActive(false);
+                    coinAnimation[i].gameObject.SetActive(true);
+                    coinAnimation[i].Initialize(amount);
+                }
+            }
+        }
+
+        public void PlayGemAnimation(int amount)
+        {
+            for (int i = 0; i < gemAnimation.Length; i++)
+            {
+                if (gemAnimation[i] != null)
+                {
+                    gemAnimation[i].gameObject.SetActive(false);
+                    gemAnimation[i].gameObject.SetActive(true);
+                    gemAnimation[i].Initialize(amount);
+                }
+            }
         }
     }
 }

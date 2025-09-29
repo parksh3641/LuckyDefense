@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace LuckyDefense
 {
-    public partial class GameManager : MonoBehaviour
+    public class GameManager : MonoBehaviour
     {
         public static GameManager Instance;
         
@@ -107,12 +107,22 @@ namespace LuckyDefense
         {
             myGold += amount;
             aiGold += amount;
+
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.PlayGoldAnimation(amount);
+            }
         }
 
         public void AddGem(int amount)
         {
             myGem += amount;
             aiGem += amount;
+            
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.PlayGemAnimation(amount);
+            }
         }
     }
 }
