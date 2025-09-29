@@ -143,9 +143,17 @@ namespace LuckyDefense
 
         private void ValidateWeapons()
         {
-            if (towerWeapons == null || towerWeapons.Length != maxStackCount)
+            if (towerWeapons == null)
             {
-                Debug.LogError($"타워 무기 배열이 올바르지 않습니다. 필요: {maxStackCount}개, 현재: {towerWeapons?.Length ?? 0}개");
+                Debug.LogError($"타워 무기 배열이 null입니다.");
+                return;
+            }
+    
+            int requiredWeaponCount = maxStackCount;
+    
+            if (towerWeapons.Length < requiredWeaponCount)
+            {
+                Debug.LogError($"타워 무기 배열이 부족합니다. 필요: {requiredWeaponCount}개, 현재: {towerWeapons.Length}개");
                 return;
             }
 

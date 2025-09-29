@@ -440,59 +440,6 @@ namespace LuckyDefense
             }
         }
 
-        public void UpgradeSelectedTower()
-        {
-            if (selectedTowerGroup != null)
-            {
-                selectedTowerGroup.UpgradeAllTowers();
-                Debug.Log($"타워 그룹 업그레이드: {selectedTowerGroup.name}");
-            }
-            else if (selectedTowerWeapon != null)
-            {
-                selectedTowerWeapon.UpgradeWeapon();
-                Debug.Log($"타워 무기 업그레이드: {selectedTowerWeapon.name}");
-            }
-        }
-
-        public void RemoveSelectedTower()
-        {
-            if (selectedTowerGroup == null && selectedTowerWeapon == null) return;
-            
-            if (towerManager == null) return;
-            
-            Vector3 towerPosition = selectedTowerGroup != null ? 
-                selectedTowerGroup.transform.position : 
-                selectedTowerWeapon.transform.position;
-            
-            Vector2Int slot = GetSlotFromPosition(towerPosition);
-            if (slot.x != -1 && slot.y != -1)
-            {
-                towerManager.RemovePlayerTower(slot.x, slot.y);
-                ClearSelection();
-                Debug.Log($"타워 제거: 위치 ({slot.x}, {slot.y})");
-            }
-        }
-
-        public TowerGroup GetSelectedTowerGroup()
-        {
-            return selectedTowerGroup;
-        }
-
-        public TowerWeapon GetSelectedTowerWeapon()
-        {
-            return selectedTowerWeapon;
-        }
-
-        public bool HasSelectedTower()
-        {
-            return selectedTowerGroup != null || selectedTowerWeapon != null;
-        }
-
-        public void ForceDeselect()
-        {
-            ClearSelection();
-        }
-
         private void OnDestroy()
         {
             HideSelectionVisual();

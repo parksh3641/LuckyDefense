@@ -10,11 +10,18 @@ namespace LuckyDefense
     {
         public static GameManager Instance;
         
+        [Header("Player Resources")]
         [SerializeField] private int myGold = 100;
         [SerializeField] private int myGem = 0;
         [SerializeField] private int myMaxUnitCount = 25;
         [SerializeField] private int mySummonCost = 0;
-
+        
+        [Header("AI Resources")]
+        [SerializeField] private int aiGold = 100;
+        [SerializeField] private int aiGem = 0;
+        [SerializeField] private int aiMaxUnitCount = 25;
+        [SerializeField] private int aiSummonCost = 0;
+        
         private const float spawnNormalPercent = 97.44f;
         private const float spawnRarePercent = 1.97f;
         private const float spawnHeroPercent = 0.5f;
@@ -27,10 +34,7 @@ namespace LuckyDefense
         private const int gamblingRareGemCost = 1;
         private const int gamblingHeroGemCost = 2;
         
-        [SerializeField] private int aiGold = 100;
-        [SerializeField] private int aiGem = 0;
-        [SerializeField] private int aiMaxUnitCount = 25;
-        [SerializeField] private int aiSummonCost = 0;
+        private TowerManager towerManager;
         
         public float SpawanNormalPercent => spawnNormalPercent;
         public float SpawnRarePercent => spawnRarePercent;
@@ -67,6 +71,8 @@ namespace LuckyDefense
             {
                 WaveManager.Instance.StartGame();
             }
+            
+            towerManager = FindObjectOfType<TowerManager>();
         }
 
         private void InitializeGameData()
@@ -142,7 +148,6 @@ namespace LuckyDefense
                 return false;
             }
             
-            TowerManager towerManager = FindObjectOfType<TowerManager>();
             if (towerManager == null) return false;
             
             if (towerManager.GetPlayerTotalTowerCount() >= myMaxUnitCount)
@@ -173,7 +178,6 @@ namespace LuckyDefense
                 return false;
             }
             
-            TowerManager towerManager = FindObjectOfType<TowerManager>();
             if (towerManager == null) return false;
             
             if (towerManager.GetPlayerTotalTowerCount() >= myMaxUnitCount)
@@ -203,49 +207,40 @@ namespace LuckyDefense
                 Debug.Log($"젬 부족: 필요 {gamblingHeroGemCost}, 보유 {myGem}");
                 return false;
             }
-    
-            TowerManager towerManager = FindObjectOfType<TowerManager>();
+
             if (towerManager == null) return false;
-    
+
             if (towerManager.GetPlayerTotalTowerCount() >= myMaxUnitCount)
             {
                 Debug.Log("최대 유닛 수 도달");
                 return false;
             }
-    
+
             myGem -= gamblingHeroGemCost;
-    
+
             float randomValue = UnityEngine.Random.Range(0f, 100f);
-    
+
             if (randomValue < gamblingHeroPercent)
             {
                 int heroTypeId = UnityEngine.Random.Range(5, 7);
-                bool success = SpawnGamblingTower(heroTypeId);
-        
-                if (success && UIManager.Instance != null)
-                {
-                    UIManager.Instance.ShowHeroNotification();
-                }
-        
-                return success;
+                return SpawnGamblingTower(heroTypeId);
             }
-    
+
             Debug.Log("Hero 도박 실패");
             return false;
         }
 
         private bool SpawnGamblingTower(int towerTypeId)
         {
-            TowerManager towerManager = FindObjectOfType<TowerManager>();
             if (towerManager == null) return false;
-    
+
             bool success = towerManager.SpawnGamblingTower(towerTypeId);
-    
+
             if (success && towerTypeId >= 5 && UIManager.Instance != null)
             {
                 UIManager.Instance.ShowHeroNotification();
             }
-    
+
             return success;
         }
         
@@ -253,7 +248,6 @@ namespace LuckyDefense
         {
             if (aiGem < gamblingNormalGemCost) return false;
             
-            TowerManager towerManager = FindObjectOfType<TowerManager>();
             if (towerManager == null) return false;
             
             if (towerManager.GetAITotalTowerCount() >= aiMaxUnitCount) return false;
@@ -275,7 +269,6 @@ namespace LuckyDefense
         {
             if (aiGem < gamblingRareGemCost) return false;
             
-            TowerManager towerManager = FindObjectOfType<TowerManager>();
             if (towerManager == null) return false;
             
             if (towerManager.GetAITotalTowerCount() >= aiMaxUnitCount) return false;
@@ -296,44 +289,35 @@ namespace LuckyDefense
         public bool AIGambleHeroTower()
         {
             if (aiGem < gamblingHeroGemCost) return false;
-    
-            TowerManager towerManager = FindObjectOfType<TowerManager>();
+
             if (towerManager == null) return false;
-    
+
             if (towerManager.GetAITotalTowerCount() >= aiMaxUnitCount) return false;
-    
+
             aiGem -= gamblingHeroGemCost;
-    
+
             float randomValue = UnityEngine.Random.Range(0f, 100f);
-    
+
             if (randomValue < gamblingHeroPercent)
             {
                 int heroTypeId = UnityEngine.Random.Range(5, 7);
-                bool success = SpawnAIGamblingTower(heroTypeId);
-        
-                if (success && UIManager.Instance != null)
-                {
-                    UIManager.Instance.ShowHeroNotification();
-                }
-        
-                return success;
+                return SpawnAIGamblingTower(heroTypeId);
             }
-    
+
             return false;
         }
 
         private bool SpawnAIGamblingTower(int towerTypeId)
         {
-            TowerManager towerManager = FindObjectOfType<TowerManager>();
             if (towerManager == null) return false;
-    
+
             bool success = towerManager.SpawnAIGamblingTower(towerTypeId);
-    
+
             if (success && towerTypeId >= 5 && UIManager.Instance != null)
             {
                 UIManager.Instance.ShowHeroNotification();
             }
-    
+
             return success;
         }
     }

@@ -73,8 +73,22 @@ namespace LuckyDefense
         private void OnEnable()
         {
             isActive = true;
-            InitializeTower();
-            StartTargetDetection();
+    
+            if (towerData == null)
+            {
+                InitializeTower();
+            }
+            else
+            {
+                currentState = TowerState.Idle;
+                SetDefaultDirection();
+                PlayAnimation(idleAnimationName, true);
+            }
+    
+            if (!IsInvoking(nameof(DetectEnemies)))
+            {
+                StartTargetDetection();
+            }
         }
 
         private void OnDisable()

@@ -575,7 +575,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -0.25, z: 0}
-  m_LocalScale: {x: 0.75, y: 0.75, z: 1}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2948269635114943999}
@@ -593,13 +593,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c84e7f0922f49d3a6a84668ed821bfb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  towerTypeId: 6
+  towerTypeId: 8
   skeletonAnimation: {fileID: 6620638740385577573}
   idleAnimationName: idle
   attackAnimationName: attack
   moveAnimationName: move
   firePoint: {fileID: 2948269635114943999}
-  bulletPrefab: {fileID: 8196739643507731090, guid: 58ffe0ebf3ea6d34dbf532eff08afbd5,
+  bulletPrefab: {fileID: 8196739643507731090, guid: d81974e0153c0a24388a51ff6622a662,
     type: 3}
   enemyLayerMask:
     serializedVersion: 2
@@ -651,13 +651,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c84e7f0922f49d3a6a84668ed821bfb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  towerTypeId: 6
+  towerTypeId: 8
   skeletonAnimation: {fileID: 8419685010871882679}
   idleAnimationName: idle
   attackAnimationName: attack
   moveAnimationName: move
   firePoint: {fileID: 4725191887540105629}
-  bulletPrefab: {fileID: 8196739643507731090, guid: 58ffe0ebf3ea6d34dbf532eff08afbd5,
+  bulletPrefab: {fileID: 8196739643507731090, guid: d81974e0153c0a24388a51ff6622a662,
     type: 3}
   enemyLayerMask:
     serializedVersion: 2
@@ -709,13 +709,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c84e7f0922f49d3a6a84668ed821bfb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  towerTypeId: 6
+  towerTypeId: 8
   skeletonAnimation: {fileID: 5485878560614967090}
   idleAnimationName: idle
   attackAnimationName: attack
   moveAnimationName: move
   firePoint: {fileID: 232415295799297708}
-  bulletPrefab: {fileID: 8196739643507731090, guid: 58ffe0ebf3ea6d34dbf532eff08afbd5,
+  bulletPrefab: {fileID: 8196739643507731090, guid: d81974e0153c0a24388a51ff6622a662,
     type: 3}
   enemyLayerMask:
     serializedVersion: 2

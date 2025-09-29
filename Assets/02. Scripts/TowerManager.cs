@@ -809,31 +809,44 @@ namespace LuckyDefense
         public bool CombineAIMyth1()
         {
             if (!CanCombineAIMyth1()) return false;
-            
+    
             ConsumeAITowerType(1);
             ConsumeAITowerType(3);
             ConsumeAITowerType(5);
-            
+    
             Vector2Int emptySlot = GetFirstAIEmptySlot();
             if (emptySlot.x == -1) return false;
-            
+    
             PlaceTowerForAI(emptySlot.x, emptySlot.y, 7);
+    
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.ShowMythNotification(1);
+            }
+    
             Debug.Log("AI 신화 타워 7번 생성 완료");
             return true;
         }
+
         
         public bool CombineAIMyth2()
         {
             if (!CanCombineAIMyth2()) return false;
-            
+    
             ConsumeAITowerType(2);
             ConsumeAITowerType(4);
             ConsumeAITowerType(6);
-            
+    
             Vector2Int emptySlot = GetFirstAIEmptySlot();
             if (emptySlot.x == -1) return false;
-            
+    
             PlaceTowerForAI(emptySlot.x, emptySlot.y, 8);
+    
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.ShowMythNotification(2);
+            }
+    
             Debug.Log("AI 신화 타워 8번 생성 완료");
             return true;
         }
