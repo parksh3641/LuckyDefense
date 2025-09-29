@@ -19,6 +19,9 @@ namespace LuckyDefense
         [SerializeField] private GameObject hpViewer;
         [SerializeField] private Image hpFillAmount;
         [SerializeField] private TMP_Text hpText;
+
+        [SerializeField] private GameObject timerObject;
+        [SerializeField] private TMP_Text timerText;
         
         [Header("Components")]
         [SerializeField] private SkeletonAnimation skeletonAnimation;
@@ -38,6 +41,14 @@ namespace LuckyDefense
         private float miniBossTimer = 0f;
         private bool isMiniBoss = false;
         
+        private Transform rootParent;
+        private Vector3 targetPosition;
+        private Vector3 direction;
+        private float distanceToTarget;
+        
+        private static readonly Quaternion rotationZero = Quaternion.Euler(0, 0, 0);
+        private static readonly Quaternion rotation180 = Quaternion.Euler(0, 180, 0);
+        
         public float MaxHP => maxHP;
         public int GoldReward => goldReward;
         public int AttackDamage => attackDamage;
@@ -50,6 +61,8 @@ namespace LuckyDefense
                 
             if (skeletonAnimation == null)
                 skeletonAnimation = GetComponent<SkeletonAnimation>();
+                
+            CacheRootParent();
         }
 
         public void Initialize(Vector3[] waypointPath, EnemySpawner enemySpawner)
@@ -74,14 +87,27 @@ namespace LuckyDefense
                 transform.position = waypoints[0];
                 currentWaypointIndex = 1;
             }
-    
+
             if (effect != null)
                 effect.gameObject.SetActive(false);
-    
+
             isMiniBoss = gameObject.CompareTag("MiniBoss");
             if (isMiniBoss)
             {
                 miniBossTimer = miniBossLifeTime;
+                if (timerObject != null)
+                {
+                    timerObject.SetActive(true);
+                }
+                if (hpViewer != null)
+                {
+                    hpViewer.SetActive(true);
+                }
+            }
+            else
+            {
+                if (timerObject != null)
+                    timerObject.SetActive(false);
             }
         }
         
@@ -97,33 +123,75 @@ namespace LuckyDefense
         private void Update()
         {
             if (isDead) return;
-    
+
             if (isMiniBoss)
             {
                 miniBossTimer -= Time.deltaTime;
+                UpdateTimerUI();
+                UpdateHPUI();
+
                 if (miniBossTimer <= 0f)
                 {
                     DieByTimeout();
                     return;
                 }
             }
-    
+
             if (!isMoving) return;
-    
+
             MoveToNextWaypoint();
+        }
+        
+        private void CacheRootParent()
+        {
+            rootParent = transform;
+            while (rootParent.parent != null)
+                rootParent = rootParent.parent;
+        }
+        
+        private void CorrectUIRotation(Transform uiTransform)
+        {
+            Transform uiRoot = uiTransform;
+            while (uiRoot.parent != null)
+                uiRoot = uiRoot.parent;
+
+            Vector3 parentEuler = uiRoot.eulerAngles;
+            uiTransform.rotation = rotationZero;
+            uiTransform.Rotate(0, parentEuler.y, 0);
+        }
+        
+        private void UpdateTimerUI()
+        {
+            if (timerText != null && isMiniBoss)
+            {
+                float displayTime = Mathf.Max(0f, miniBossTimer);
+                timerText.text = $"{displayTime:F1}s";
+        
+                if (miniBossTimer < 30f)
+                {
+                    timerText.color = Color.red;
+                }
+                else
+                {
+                    timerText.color = Color.white;
+                }
+        
+                CorrectUIRotation(timerObject.transform);
+            }
         }
 
         private void MoveToNextWaypoint()
         {
             if (waypoints == null || waypoints.Length == 0) return;
 
-            Vector3 targetPosition = waypoints[currentWaypointIndex];
-            Vector3 direction = (targetPosition - transform.position).normalized;
+            targetPosition = waypoints[currentWaypointIndex];
+            direction = (targetPosition - transform.position).normalized;
     
-            transform.position += direction * moveSpeed * Time.deltaTime;
-            LookAtDirection(direction);
+            transform.position += direction * (moveSpeed * Time.deltaTime);
+            LookAtDirection();
 
-            if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+            distanceToTarget = Vector3.Distance(transform.position, targetPosition);
+            if (distanceToTarget < 0.1f)
             {
                 currentWaypointIndex++;
         
@@ -134,15 +202,15 @@ namespace LuckyDefense
             }
         }
 
-        private void LookAtDirection(Vector3 direction)
+        private void LookAtDirection()
         {
             if (currentWaypointIndex == 1 || currentWaypointIndex == 2 || currentWaypointIndex == 4)
             {
-                transform.rotation = Quaternion.Euler(0, 180, 0); // 오른쪽
+                transform.rotation = rotation180;
             }
             else
             {
-                transform.rotation = Quaternion.Euler(0, 0, 0);   // 왼쪽
+                transform.rotation = rotationZero;
             }
         }
         
@@ -196,13 +264,7 @@ namespace LuckyDefense
                 hpText.text = $"{(int)currentHP}";
             }
 
-            Transform rootParent = hpViewer.transform;
-            while (rootParent.parent != null)
-                rootParent = rootParent.parent;
-
-            Vector3 parentEuler = rootParent.eulerAngles;
-            hpViewer.transform.rotation = Quaternion.Euler(0, 0, 0);
-            hpViewer.transform.Rotate(0, parentEuler.y, 0);
+            CorrectUIRotation(hpViewer.transform);
         }
         
         private void OnEnemyDeath()
@@ -220,8 +282,7 @@ namespace LuckyDefense
             if (boxCollider != null)
                 boxCollider.enabled = false;
        
-            if(hpViewer != null)
-                hpViewer.SetActive(false);
+            SetUIActive(false);
 
             PlayAnimation("dead");
        
@@ -238,7 +299,7 @@ namespace LuckyDefense
                 }
                 else if (gameObject.CompareTag("Enemy"))
                 {
-                    GameManager.Instance.AddGold(1);
+                    GameManager.Instance.AddGold(2);
                 }
             }
 
@@ -247,16 +308,39 @@ namespace LuckyDefense
 
         private void CheckBossDefeatForVictory()
         {
-            if (WaveManager.Instance != null && WaveManager.Instance.IsLastWave())
+            if (WaveManager.Instance != null)
             {
-                StartCoroutine(CheckVictoryAfterDelay());
+                if (WaveManager.Instance.IsLastWave())
+                {
+                    StartCoroutine(CheckVictoryAfterDelay());
+                }
+                else
+                {
+                    StartCoroutine(CheckNextWaveAfterDelay());
+                }
             }
         }
+
+        private IEnumerator CheckNextWaveAfterDelay()
+        {
+            yield return new WaitForSeconds(0.5f);
+    
+            GameObject[] remainingBosses = GameObject.FindGameObjectsWithTag("Boss");
+            if (remainingBosses.Length == 0)
+            {
+                if (UIManager.Instance != null)
+                {
+                    UIManager.Instance.ShowBossDefeatNotification();
+                    WaveManager.Instance.SetWaveTimer(5f);
+                }
+            }
+        }
+
 
         private IEnumerator CheckVictoryAfterDelay()
         {
             yield return new WaitForSeconds(0.5f);
-       
+    
             GameObject[] remainingBosses = GameObject.FindGameObjectsWithTag("Boss");
             if (remainingBosses.Length == 0)
             {
@@ -312,12 +396,20 @@ namespace LuckyDefense
             if (boxCollider != null)
                 boxCollider.enabled = false;
     
-            if(hpViewer != null)
-                hpViewer.SetActive(false);
+            SetUIActive(false);
 
             PlayAnimation("dead");
 
             StartCoroutine(DestroyAfterDelay());
+        }
+        
+        private void SetUIActive(bool active)
+        {
+            if(hpViewer != null)
+                hpViewer.SetActive(active);
+            
+            if(timerObject != null && isMiniBoss)
+                timerObject.SetActive(active);
         }
     }
 }

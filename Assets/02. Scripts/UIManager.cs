@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -41,6 +42,7 @@ namespace LuckyDefense
         [SerializeField] private TextMeshProUGUI[] goldText;
         [SerializeField] private TextMeshProUGUI[] gemText;
         [SerializeField] private TextMeshProUGUI[] maxCountText;
+        [SerializeField] private GameObject[] maxCountTextObject;
         [SerializeField] private TextMeshProUGUI summonCostText;
         [SerializeField] private TextMeshProUGUI waveText;
         [SerializeField] private TextMeshProUGUI waveTimerText;
@@ -49,6 +51,15 @@ namespace LuckyDefense
         [Header("Enemy Count UI")]
         [SerializeField] private TextMeshProUGUI totalEnemyCountText;
         [SerializeField] private Image totalEnemyFillamount;
+        
+        [Header("Notification")]
+        [SerializeField] private GameObject heroNotificationObject;
+        [SerializeField] private GameObject myth1NotificationObject;
+        [SerializeField] private GameObject myth2NotificationObject;
+        [SerializeField] private GameObject bossDefeatNotificationObject;
+
+        private Queue<GameObject> notificationQueue = new Queue<GameObject>();
+        private bool isShowingNotification = false;
         
         [Header("Managers")]
         [SerializeField] private TowerManager towerManager;
@@ -79,6 +90,23 @@ namespace LuckyDefense
             {
                 gemAnimation[i].gameObject.SetActive(false);
             }
+            
+            for (int i = 0; i < maxCountTextObject.Length; i++)
+            {
+                maxCountTextObject[i].SetActive(false);
+            }
+            
+            if (heroNotificationObject != null)
+                heroNotificationObject.SetActive(false);
+    
+            if (myth1NotificationObject != null)
+                myth1NotificationObject.SetActive(false);
+    
+            if (myth2NotificationObject != null)
+                myth2NotificationObject.SetActive(false);
+    
+            if (bossDefeatNotificationObject != null)
+                bossDefeatNotificationObject.SetActive(false);
         }
 
         private void Start()
@@ -208,13 +236,25 @@ namespace LuckyDefense
             int currentCount = towerManager.GetPlayerTotalTowerCount();
             int maxCount = gameManager.MyMaxUnitCount;
             string countString = $"{currentCount}/{maxCount}";
-    
-            Color textColor = currentCount >= maxCount ? Color.red : Color.white;
-    
+            
             for (int i = 0; i < maxCountText.Length; i++)
             {
                 maxCountText[i].text = countString;
-                maxCountText[i].color = textColor;
+            }
+
+            if (currentCount >= maxCount)
+            {
+                for (int i = 0; i < maxCountTextObject.Length; i++)
+                {
+                    maxCountTextObject[i].SetActive(true);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < maxCountTextObject.Length; i++)
+                {
+                    maxCountTextObject[i].SetActive(false);
+                }
             }
         }
 
@@ -462,6 +502,64 @@ namespace LuckyDefense
                     Debug.Log("신화 타워 2번 합성 성공!");
                 }
             }
+        }
+        
+        public void ShowHeroNotification()
+        {
+            EnqueueNotification(heroNotificationObject);
+        }
+
+        public void ShowMythNotification(int mythType)
+        {
+            if (mythType == 1)
+            {
+                EnqueueNotification(myth1NotificationObject);
+            }
+            else if (mythType == 2)
+            {
+                EnqueueNotification(myth2NotificationObject);
+            }
+        }
+
+        public void ShowBossDefeatNotification()
+        {
+            EnqueueNotification(bossDefeatNotificationObject);
+        }
+
+        private void EnqueueNotification(GameObject notificationObj)
+        {
+            if (notificationObj == null) return;
+    
+            notificationQueue.Enqueue(notificationObj);
+    
+            if (!isShowingNotification)
+            {
+                ProcessNextNotification();
+            }
+        }
+
+        private void ProcessNextNotification()
+        {
+            if (notificationQueue.Count == 0)
+            {
+                isShowingNotification = false;
+                return;
+            }
+    
+            isShowingNotification = true;
+            GameObject nextNotification = notificationQueue.Dequeue();
+            StartCoroutine(NotificationCoroutine(nextNotification));
+        }
+
+        private IEnumerator NotificationCoroutine(GameObject notificationObj)
+        {
+            notificationObj.SetActive(true);
+    
+            yield return new WaitForSeconds(1.5f);
+    
+            notificationObj.SetActive(false);
+    
+            ProcessNextNotification();
         }
     }
 }

@@ -105,6 +105,12 @@ namespace LuckyDefense
             gameManager.MyGold = currentGold - currentCost;
             gameManager.UpdatePlayerSummonCost(GetNextSummonCost(mySummonCount));
             mySummonCount++;
+    
+            if (selectedTowerType >= 5 && UIManager.Instance != null)
+            {
+                UIManager.Instance.ShowHeroNotification();
+            }
+    
             Debug.Log($"플레이어 타워 생성 완료: 타입 {selectedTowerType}, 위치 ({bestSlot.x}, {bestSlot.y})");
             return true;
         }
@@ -140,6 +146,12 @@ namespace LuckyDefense
             gameManager.AIGold = currentGold - currentCost;
             gameManager.UpdateAISummonCost(GetNextSummonCost(aiSummonCount));
             aiSummonCount++;
+    
+            if (selectedTowerType >= 5 && UIManager.Instance != null)
+            {
+                UIManager.Instance.ShowHeroNotification();
+            }
+    
             Debug.Log($"AI 타워 생성 완료: 타입 {selectedTowerType}, 위치 ({bestSlot.x}, {bestSlot.y})");
             return true;
         }
@@ -667,16 +679,22 @@ namespace LuckyDefense
         public bool CombineMyth1()
         {
             if (!CanCombineMyth1()) return false;
-            
+    
             ConsumeTowerType(1);
             ConsumeTowerType(3);
             ConsumeTowerType(5);
-            
+    
             Vector2Int emptySlot = GetFirstEmptySlot();
             if (emptySlot.x == -1) return false;
-            
+    
             PlaceTowerForPlayer(emptySlot.x, emptySlot.y, 7);
-            Debug.Log("신화 타워 7번 생성 완료");
+    
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.ShowMythNotification(1);
+            }
+    
+            Debug.Log("신화 타워 1번 생성 완료");
             return true;
         }
         
@@ -692,7 +710,13 @@ namespace LuckyDefense
             if (emptySlot.x == -1) return false;
             
             PlaceTowerForPlayer(emptySlot.x, emptySlot.y, 8);
-            Debug.Log("신화 타워 8번 생성 완료");
+            
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.ShowMythNotification(2);
+            }
+            
+            Debug.Log("신화 타워 2번 생성 완료");
             return true;
         }
         

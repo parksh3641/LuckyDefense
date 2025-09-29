@@ -23,16 +23,14 @@ namespace LuckyDefense
 
         public void Initialize(int amount)
         {
+            if (!gameObject.activeInHierarchy) return;
+            
             coinText.text = "+" + amount;
             rectTransform.anchoredPosition = startPosition;
             gameObject.SetActive(true);
 
             StopAllCoroutines();
-
-            if (gameObject.activeInHierarchy)
-            {
-                StartCoroutine(PlayAnimation());
-            }
+            StartCoroutine(PlayAnimation());
         }
 
         private IEnumerator PlayAnimation()

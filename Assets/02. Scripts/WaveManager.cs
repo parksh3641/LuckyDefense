@@ -194,5 +194,10 @@ namespace LuckyDefense
             int maxWave = csvManager.GetMaxWaveIndex(currentArenaType);
             return currentWaveIndex >= maxWave;
         }
+        
+        public void SetWaveTimer(float time)
+        {
+            waveTimer = time;
+        }
     }
 }
