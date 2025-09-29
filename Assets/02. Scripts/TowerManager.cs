@@ -28,6 +28,7 @@ namespace LuckyDefense
         [SerializeField] protected GameObject[] normalTowerGroupPrefabs;
         [SerializeField] protected GameObject[] rareTowerGroupPrefabs;
         [SerializeField] protected GameObject[] heroTowerGroupPrefabs;
+        [SerializeField] protected GameObject[] mythTowerGroupPrefabs;
         
         [Header("Managers")]
         [SerializeField] protected GameManager gameManager;
@@ -320,6 +321,11 @@ namespace LuckyDefense
                     int heroIndex = towerType - 5;
                     return heroIndex < heroTowerGroupPrefabs.Length ? heroTowerGroupPrefabs[heroIndex] : null;
                 
+                case 7:
+                case 8:
+                    int mythIndex = towerType - 7;
+                    return mythIndex < mythTowerGroupPrefabs.Length ? mythTowerGroupPrefabs[mythIndex] : null;
+                
                 default:
                     return null;
             }
@@ -597,6 +603,118 @@ namespace LuckyDefense
             PlaceTowerForPlayer(bestSlot.x, bestSlot.y, towerTypeId);
             Debug.Log($"도박 타워 생성 완료: 타입 {towerTypeId}, 위치 ({bestSlot.x}, {bestSlot.y})");
             return true;
+        }
+        
+        public bool CanCombineMyth1()
+        {
+            return HasTowerType(1) && HasTowerType(3) && HasTowerType(5) && HasEmptySlot();
+        }
+        
+        public bool CanCombineMyth2()
+        {
+            return HasTowerType(2) && HasTowerType(4) && HasTowerType(6) && HasEmptySlot();
+        }
+        
+        private bool HasTowerType(int towerTypeId)
+        {
+            for (int row = 0; row < 3; row++)
+            {
+                for (int col = 0; col < 6; col++)
+                {
+                    TowerSlot slot = myTowerGrid[row, col];
+                    if (!slot.IsEmpty && slot.towerTypeId == towerTypeId && slot.stackCount > 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        private bool HasEmptySlot()
+        {
+            for (int row = 0; row < 3; row++)
+            {
+                for (int col = 0; col < 6; col++)
+                {
+                    if (myTowerGrid[row, col].IsEmpty)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        public bool CombineMyth1()
+        {
+            if (!CanCombineMyth1()) return false;
+            
+            ConsumeTowerType(1);
+            ConsumeTowerType(3);
+            ConsumeTowerType(5);
+            
+            Vector2Int emptySlot = GetFirstEmptySlot();
+            if (emptySlot.x == -1) return false;
+            
+            PlaceTowerForPlayer(emptySlot.x, emptySlot.y, 7);
+            Debug.Log("신화 타워 7번 생성 완료");
+            return true;
+        }
+        
+        public bool CombineMyth2()
+        {
+            if (!CanCombineMyth2()) return false;
+            
+            ConsumeTowerType(2);
+            ConsumeTowerType(4);
+            ConsumeTowerType(6);
+            
+            Vector2Int emptySlot = GetFirstEmptySlot();
+            if (emptySlot.x == -1) return false;
+            
+            PlaceTowerForPlayer(emptySlot.x, emptySlot.y, 8);
+            Debug.Log("신화 타워 8번 생성 완료");
+            return true;
+        }
+        
+        private void ConsumeTowerType(int towerTypeId)
+        {
+            for (int row = 0; row < 3; row++)
+            {
+                for (int col = 0; col < 6; col++)
+                {
+                    TowerSlot slot = myTowerGrid[row, col];
+                    if (!slot.IsEmpty && slot.towerTypeId == towerTypeId && slot.stackCount > 0)
+                    {
+                        if (slot.stackCount > 1)
+                        {
+                            slot.stackCount--;
+                            slot.towerGroup.RemoveTower();
+                        }
+                        else
+                        {
+                            RemovePlayerTower(row, col);
+                        }
+                        return;
+                    }
+                }
+            }
+        }
+        
+        private Vector2Int GetFirstEmptySlot()
+        {
+            for (int row = 0; row < 3; row++)
+            {
+                for (int col = 0; col < 6; col++)
+                {
+                    if (myTowerGrid[row, col].IsEmpty)
+                    {
+                        return new Vector2Int(row, col);
+                    }
+                }
+            }
+            return new Vector2Int(-1, -1);
         }
 
         public bool IsValidPosition(int row, int col)

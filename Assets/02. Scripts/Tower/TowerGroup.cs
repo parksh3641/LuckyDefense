@@ -49,6 +49,12 @@ namespace LuckyDefense
         {
             this.towerTypeId = towerTypeId;
             SetTowerRankFromType();
+    
+            if (towerTypeId == 7 || towerTypeId == 8)
+            {
+                maxStackCount = 1;
+            }
+    
             LoadTowerData();
             ValidateWeapons();
             UpdateRankImage();
@@ -59,6 +65,12 @@ namespace LuckyDefense
         {
             this.towerTypeId = typeId;
             SetTowerRankFromType();
+    
+            if (towerTypeId == 7 || towerTypeId == 8)
+            {
+                maxStackCount = 1;
+            }
+    
             LoadTowerData();
             ValidateWeapons();
             UpdateRankImage();

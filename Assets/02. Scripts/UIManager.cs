@@ -29,6 +29,10 @@ namespace LuckyDefense
         [SerializeField] private Button gamblingRareBtn;
         [SerializeField] private Button gamblingHeroBtn;
         
+        [Header("Myth Buttons")]
+        [SerializeField] private Button mythButton1;
+        [SerializeField] private Button mythButton2;
+        
         [Header("UI Animations")]
         [SerializeField] private CoinAnimation[] coinAnimation;
         [SerializeField] private CoinAnimation[] gemAnimation;
@@ -99,6 +103,7 @@ namespace LuckyDefense
                 yield return waitTime;
                 UpdateAllUI();
                 UpdateMiniBossTimer();
+                UpdateMythButtons();
             }
         }
 
@@ -117,8 +122,20 @@ namespace LuckyDefense
     
             if (gamblingHeroBtn != null)
                 gamblingHeroBtn.onClick.AddListener(OnGamblingHeroClicked);
+    
+            if (mythButton1 != null)
+                mythButton1.onClick.AddListener(OnMythButton1Clicked);
+    
+            if (mythButton2 != null)
+                mythButton2.onClick.AddListener(OnMythButton2Clicked);
 
             miniBossSpawnBtn.gameObject.SetActive(false);
+    
+            if (mythButton1 != null)
+                mythButton1.gameObject.SetActive(false);
+    
+            if (mythButton2 != null)
+                mythButton2.gameObject.SetActive(false);
         }
 
         private void SetInitialViewState()
@@ -397,6 +414,48 @@ namespace LuckyDefense
                 else
                 {
                     Debug.Log("Hero 도박 실패");
+                }
+            }
+        }
+        
+        private void UpdateMythButtons()
+        {
+            if (towerManager == null) return;
+    
+            bool canCombineMyth1 = towerManager.CanCombineMyth1();
+            bool canCombineMyth2 = towerManager.CanCombineMyth2();
+    
+            if (mythButton1 != null)
+            {
+                mythButton1.gameObject.SetActive(canCombineMyth1);
+            }
+    
+            if (mythButton2 != null)
+            {
+                mythButton2.gameObject.SetActive(canCombineMyth2);
+            }
+        }
+        
+        private void OnMythButton1Clicked()
+        {
+            if (towerManager != null)
+            {
+                bool success = towerManager.CombineMyth1();
+                if (success)
+                {
+                    Debug.Log("신화 타워 1번 합성 성공!");
+                }
+            }
+        }
+
+        private void OnMythButton2Clicked()
+        {
+            if (towerManager != null)
+            {
+                bool success = towerManager.CombineMyth2();
+                if (success)
+                {
+                    Debug.Log("신화 타워 2번 합성 성공!");
                 }
             }
         }

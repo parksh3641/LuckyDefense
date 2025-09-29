@@ -79,6 +79,9 @@ namespace LuckyDefense
                 {
                     myGold = defaultData.First_Money;
                     aiGold = defaultData.First_Money;
+
+                    myGold = 9999;
+                    aiGold = 9999;
                 }
                 
                 var initialSummonCost = csvManager.GetSummonCostData(1);

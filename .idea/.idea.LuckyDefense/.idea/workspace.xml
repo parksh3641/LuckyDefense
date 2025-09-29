@@ -6,16 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="7b6b3ff4-6bbc-4028-9d1b-7db6c1c7e193" name="변경" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.LuckyDefense/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.LuckyDefense/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/01. Scenes/MainScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/01. Scenes/MainScene.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/Default/ButtonClickAnimation.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/02. Scripts/Default/ButtonClickAnimation.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/Default/CoinAnimation.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/02. Scripts/Default/CoinAnimation.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/GameManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/02. Scripts/GameManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/Tower/ObjectDetector.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/Tower/ObjectDetector.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/Tower/TowerGroup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/02. Scripts/Tower/TowerGroup.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/TowerManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/02. Scripts/TowerManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/02. Scripts/UIManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/02. Scripts/UIManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/07. Fonts/Paperlogy-9Black SDF.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/07. Fonts/Paperlogy-9Black SDF.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Resources/Tower_Data.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Resources/Tower_Data.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,7 +99,7 @@
       <workItem from="1758970153774" duration="3000" />
       <workItem from="1759034780972" duration="28554000" />
       <workItem from="1759109504834" duration="159000" />
-      <workItem from="1759109693183" duration="10361000" />
+      <workItem from="1759109693183" duration="11676000" />
     </task>
     <servers />
   </component>
